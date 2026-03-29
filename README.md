@@ -1,4 +1,3 @@
-# AI-FOR-BHARAT
 # Cognisys
 AI System Behaviour & Automation Intelligence Engine
 
