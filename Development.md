@@ -1995,3 +1995,291 @@ test_rag_pipeline.py
 ## Milestone Achieved
 
 Today marks a major milestone for Cognisys: the first successful **end-to-end RAG pipeline** integrating retrieval, prompt construction, LLM reasoning, citation generation, answer formatting, conversation memory, and performance monitoring into a single working workflow. This establishes the AI core that the upcoming API, frontend, and deployment layers will build upon.
+
+# Cognisys Development Log
+
+## Current Development Status
+
+Cognisys is being developed as an AI-powered Software Intelligence Platform designed to understand software repositories, analyze their architecture, build dependency and knowledge graphs, and provide intelligent answers about the codebase.
+
+---
+
+# Development Milestones
+
+## 1. RAG / Code Intelligence Foundation
+
+The initial development focused on building the repository intelligence and RAG pipeline.
+
+Implemented components include:
+
+- Repository scanning
+- File detection
+- AST-based code parsing
+- Code chunking
+- Multi-document chunking
+- Embedding generation
+- Vector storage using FAISS
+- Semantic search
+- Hybrid retrieval
+- Query classification
+- Prompt building
+- LLM integration
+- Citation generation
+- Conversation memory
+- Knowledge document generation
+- Repository overview generation
+
+The RAG pipeline was tested using mocked LLM/network components where appropriate to keep tests deterministic and fast.
+
+---
+
+# 2. AI Module Development
+
+The AI layer was developed to support multiple LLM providers.
+
+Supported providers include:
+
+- Ollama
+- Google Gemini
+- OpenAI
+
+The local Ollama configuration is currently used as the default development configuration.
+
+The embedding pipeline was also extended to support source-document information so that retrieved information can retain its document-level context.
+
+---
+
+# 3. Architecture Intelligence Engine
+
+A dedicated Architecture Intelligence Engine was implemented to analyze the structural properties of a repository.
+
+The architecture system currently contains the following modules:
+
+### Entry Point Detector
+
+Detects application entry points and identifies common frameworks such as:
+
+- FastAPI
+- Flask
+- Django
+
+It recognizes common entry files such as:
+
+- `main.py`
+- `app.py`
+- `manage.py`
+- `__main__.py`
+- `server.py`
+- `run.py`
+- `wsgi.py`
+- `asgi.py`
+
+---
+
+### Layer Detector
+
+Identifies architectural layers based on repository structure.
+
+Current layers include:
+
+- Presentation
+- Business
+- Knowledge
+- Analysis
+- Persistence
+- Infrastructure
+
+The detector maps repository directories to architectural responsibilities.
+
+---
+
+### Service Detector
+
+Uses AST analysis to detect application services and API endpoints.
+
+It currently supports detection of:
+
+- FastAPI applications
+- `APIRouter`
+- HTTP endpoints
+- Router modules
+- Endpoint decorators
+
+---
+
+### Dependency Graph
+
+Implemented an AST-based dependency graph that analyzes Python imports and builds relationships between modules.
+
+The dependency graph:
+
+- Detects module dependencies
+- Maps Python files to modules
+- Ignores test files
+- Handles invalid Python files safely
+- Produces deterministic dependency output
+
+---
+
+### Circular Dependency Detector
+
+Implemented cycle detection using graph traversal.
+
+The detector identifies circular dependencies between modules and reports the dependency cycle.
+
+---
+
+### Hotspot Detector
+
+Implemented architectural hotspot analysis using:
+
+- Fan-in
+- Fan-out
+- Coupling score
+- Risk classification
+
+Risk levels:
+
+- LOW
+- MEDIUM
+- HIGH
+
+The system identifies highly coupled modules that may represent architectural risks.
+
+---
+
+### Architecture Pattern Detector
+
+Implemented heuristic architecture pattern detection.
+
+Currently supported patterns include:
+
+- Layered Architecture
+- MVC
+- Monolithic Architecture
+
+Each detected pattern includes a confidence score and supporting evidence.
+
+---
+
+### Recommendation Engine
+
+Implemented an architecture recommendation engine.
+
+Current recommendations are generated for:
+
+- High coupling
+- Medium coupling
+- Circular dependencies
+- Layered architecture
+- Monolithic architecture
+
+Recommendations include:
+
+- Severity
+- Recommendation type
+- Explanation
+- Supporting architectural evidence
+
+---
+
+### Report Generator
+
+Implemented architecture report generation in:
+
+- JSON
+- Markdown
+
+Reports contain information about:
+
+- Layers
+- Dependencies
+- Circular dependencies
+- Hotspots
+- Architecture patterns
+- Recommendations
+
+---
+
+### Architecture Engine
+
+Implemented the `ArchitectureEngine` as the orchestration layer.
+
+The engine currently performs:
+
+1. Layer detection
+2. Dependency graph construction
+3. Circular dependency detection
+4. Hotspot detection
+5. Architecture pattern detection
+6. Recommendation generation
+7. Report generation
+
+A real repository integration test was also performed against the Cognisys backend.
+
+The integration detected:
+
+- 105 modules
+- 6 architectural layers
+- No circular dependencies
+- Layered Architecture
+- MVC
+- Monolithic Architecture
+- Multiple architectural hotspots
+- Multiple architecture recommendations
+
+Generated reports:
+
+- `reports/architecture_report.json`
+- `reports/architecture_report.md`
+
+---
+
+# 4. Testing Infrastructure
+
+The testing infrastructure was reorganized into a dedicated `tests/` directory.
+
+The previous root-level test files were migrated into:
+
+```text
+backend/
+└── tests/
+    ├── architecture_manual.py
+    ├── rag_pipeline_manual.py
+    ├── test_answer_formatter.py
+    ├── test_architecture_engine.py
+    ├── test_architecture_pattern_detector.py
+    ├── test_ast.py
+    ├── test_call_graph.py
+    ├── test_chunker.py
+    ├── test_circular_dependency_detector.py
+    ├── test_dependency_graph.py
+    ├── test_hotspot_detector.py
+    ├── test_recommendation_engine.py
+    ├── test_report_generator.py
+    └── ...
+
+
+
+                                Repository
+                        │
+              ┌─────────┴─────────┐
+              │                   │
+              ▼                   ▼
+        RAG Intelligence    Architecture Engine
+              │                   │
+       ┌──────┴──────┐      ┌─────┴──────────┐
+       │             │      │                │
+    Retrieval    Semantic   Layers       Dependencies
+       │          Context      │          Hotspots
+       │             │         │             │
+       └─────────────┴─────────┴─────────────┘
+                        │
+                        ▼
+               Unified Intelligence
+                        │
+                        ▼
+                       LLM
+                        │
+                        ▼
+                Cited Answer
