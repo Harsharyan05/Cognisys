@@ -46,6 +46,7 @@ class EmbeddingGenerator:
     def generate(
         self,
         chunks: List[Chunk],
+        source_document: str = "",
     ) -> List[Embedding]:
         """
         Generate embeddings for chunks.
@@ -63,9 +64,11 @@ class EmbeddingGenerator:
             embedding = Embedding(
                 chunk_id=chunk.id,
                 title=chunk.title,
-                vector=vector.tolist(),
-                dimension=len(vector),
+                source_document=source_document,
+                text=chunk.content,
                 word_count=chunk.word_count,
+                vector=vector,
+                dimension=len(vector),
             )
 
             embeddings.append(embedding)
@@ -85,8 +88,8 @@ class EmbeddingGenerator:
         """
 
         output_file = (
-            self.output_directory /
-            "embeddings.json"
+            self.output_directory
+            / "embeddings.json"
         )
 
         data = []
@@ -97,9 +100,10 @@ class EmbeddingGenerator:
                 {
                     "chunk_id": embedding.chunk_id,
                     "title": embedding.title,
+                    "source_document": embedding.source_document,
                     "dimension": embedding.dimension,
                     "word_count": embedding.word_count,
-                    "vector": embedding.vector,
+                    "vector": embedding.vector.tolist(),
                 }
             )
 

@@ -18,19 +18,26 @@
 ### Monolithic Architecture
 - Confidence: 0.85
 - Evidence:
-  - 85 modules detected
+  - 105 modules detected
   - Single deployable project
 
 ## Hotspots
 
+- **app.ai.embedding_models** (Score: 10, Risk: HIGH)
+- **app.ai.llm_engine** (Score: 8, Risk: MEDIUM)
 - **app.architecture.architecture_engine** (Score: 8, Risk: MEDIUM)
 - **app.graph.graph_models** (Score: 8, Risk: MEDIUM)
+- **app.ai.multi_vector_store** (Score: 7, Risk: MEDIUM)
+- **app.ai.rag_pipeline** (Score: 7, Risk: MEDIUM)
 - **app.architecture.report_generator** (Score: 7, Risk: MEDIUM)
 - **app.services.repository_service** (Score: 7, Risk: MEDIUM)
-- **app.main** (Score: 6, Risk: MEDIUM)
 - **app.ai.embedding_generator** (Score: 6, Risk: MEDIUM)
+- **app.ai.hybrid_retriever** (Score: 6, Risk: MEDIUM)
 - **app.ai.vector_store** (Score: 6, Risk: MEDIUM)
+- **app.main** (Score: 5, Risk: MEDIUM)
+- **app.ai.citation_engine** (Score: 5, Risk: MEDIUM)
 - **app.ai.knowledge_document_generator** (Score: 5, Risk: MEDIUM)
+- **app.ai.multi_semantic_search** (Score: 5, Risk: MEDIUM)
 - **app.architecture.architecture_models** (Score: 5, Risk: MEDIUM)
 - **app.architecture.dependency_graph** (Score: 5, Risk: MEDIUM)
 - **app.architecture.hotspot_detector** (Score: 5, Risk: MEDIUM)
@@ -40,6 +47,10 @@
 - **app.services.analysis_service** (Score: 5, Risk: MEDIUM)
 - **app.services.knowledge_graph_service** (Score: 5, Risk: MEDIUM)
 - **app.api.v1.analysis** (Score: 5, Risk: MEDIUM)
+- **app.ai.multi_embedding_generator** (Score: 4, Risk: LOW)
+- **app.ai.performance_monitor** (Score: 4, Risk: LOW)
+- **app.ai.prompt_builder_v3** (Score: 4, Risk: LOW)
+- **app.ai.query_classifier** (Score: 4, Risk: LOW)
 - **app.api.router** (Score: 4, Risk: LOW)
 - **app.architecture.service_detector** (Score: 4, Risk: LOW)
 - **app.core.logger** (Score: 4, Risk: LOW)
@@ -47,16 +58,19 @@
 - **app.graph.graph_builder** (Score: 4, Risk: LOW)
 - **app.parser.dependency_analyzer** (Score: 4, Risk: LOW)
 - **app.api.v1.repository** (Score: 4, Risk: LOW)
+- **list_models** (Score: 3, Risk: LOW)
+- **app.ai.answer_formatter** (Score: 3, Risk: LOW)
 - **app.ai.chunker** (Score: 3, Risk: LOW)
 - **app.ai.chunk_models** (Score: 3, Risk: LOW)
+- **app.ai.conversation_memory** (Score: 3, Risk: LOW)
 - **app.ai.document_generator** (Score: 3, Risk: LOW)
-- **app.ai.embedding_models** (Score: 3, Risk: LOW)
+- **app.ai.multi_document_chunker** (Score: 3, Risk: LOW)
+- **app.ai.repository_overview_generator** (Score: 3, Risk: LOW)
 - **app.ai.semantic_search** (Score: 3, Risk: LOW)
 - **app.architecture.architecture_pattern_detector** (Score: 3, Risk: LOW)
 - **app.architecture.layer_detector** (Score: 3, Risk: LOW)
 - **app.architecture.recommendation_models** (Score: 3, Risk: LOW)
 - **app.core.config** (Score: 3, Risk: LOW)
-- **app.core.constants** (Score: 3, Risk: LOW)
 - **app.database.db** (Score: 3, Risk: LOW)
 - **app.graph.relationship_extractor** (Score: 3, Risk: LOW)
 - **app.parser.architecture_analyzer** (Score: 3, Risk: LOW)
@@ -67,8 +81,10 @@
 - **app.parser.symbol_extractor** (Score: 3, Risk: LOW)
 - **app.schemas.analysis** (Score: 3, Risk: LOW)
 - **app.schemas.repository** (Score: 3, Risk: LOW)
+- **app.ai.prompt_builder_v2** (Score: 2, Risk: LOW)
 - **app.architecture.circular_dependency_detector** (Score: 2, Risk: LOW)
 - **app.architecture.entry_point_detector** (Score: 2, Risk: LOW)
+- **app.core.constants** (Score: 2, Risk: LOW)
 - **app.database.session** (Score: 2, Risk: LOW)
 - **app.graph.graph_serializer** (Score: 2, Risk: LOW)
 - **app.parser.call_graph_builder** (Score: 2, Risk: LOW)
@@ -94,12 +110,26 @@
 - **app.api.v1.graph** (Score: 0, Risk: LOW)
 - **app.api.v1.security** (Score: 0, Risk: LOW)
 - **app.api.v1.workflow** (Score: 0, Risk: LOW)
+- **app.ai.providers.base** (Score: 0, Risk: LOW)
+- **app.ai.providers.gemini_provider** (Score: 0, Risk: LOW)
+- **app.ai.providers.ollama_provider** (Score: 0, Risk: LOW)
+- **app.ai.providers.openai_provider** (Score: 0, Risk: LOW)
 
 ## Circular Dependencies
 
 No circular dependencies detected.
 
 ## Recommendations
+
+### High Coupling Detected
+- Priority: HIGH
+- Module: app.ai.embedding_models
+- Recommendation: Split this module into smaller services to reduce coupling.
+
+### Medium Coupling
+- Priority: MEDIUM
+- Module: app.ai.llm_engine
+- Recommendation: Consider refactoring this module if it continues to grow.
 
 ### Medium Coupling
 - Priority: MEDIUM
@@ -109,6 +139,16 @@ No circular dependencies detected.
 ### Medium Coupling
 - Priority: MEDIUM
 - Module: app.graph.graph_models
+- Recommendation: Consider refactoring this module if it continues to grow.
+
+### Medium Coupling
+- Priority: MEDIUM
+- Module: app.ai.multi_vector_store
+- Recommendation: Consider refactoring this module if it continues to grow.
+
+### Medium Coupling
+- Priority: MEDIUM
+- Module: app.ai.rag_pipeline
 - Recommendation: Consider refactoring this module if it continues to grow.
 
 ### Medium Coupling
@@ -123,12 +163,12 @@ No circular dependencies detected.
 
 ### Medium Coupling
 - Priority: MEDIUM
-- Module: app.main
+- Module: app.ai.embedding_generator
 - Recommendation: Consider refactoring this module if it continues to grow.
 
 ### Medium Coupling
 - Priority: MEDIUM
-- Module: app.ai.embedding_generator
+- Module: app.ai.hybrid_retriever
 - Recommendation: Consider refactoring this module if it continues to grow.
 
 ### Medium Coupling
@@ -138,7 +178,22 @@ No circular dependencies detected.
 
 ### Medium Coupling
 - Priority: MEDIUM
+- Module: app.main
+- Recommendation: Consider refactoring this module if it continues to grow.
+
+### Medium Coupling
+- Priority: MEDIUM
+- Module: app.ai.citation_engine
+- Recommendation: Consider refactoring this module if it continues to grow.
+
+### Medium Coupling
+- Priority: MEDIUM
 - Module: app.ai.knowledge_document_generator
+- Recommendation: Consider refactoring this module if it continues to grow.
+
+### Medium Coupling
+- Priority: MEDIUM
+- Module: app.ai.multi_semantic_search
 - Recommendation: Consider refactoring this module if it continues to grow.
 
 ### Medium Coupling

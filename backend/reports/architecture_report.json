@@ -1,6 +1,20 @@
 {
     "hotspots": [
         {
+            "module": "app.ai.embedding_models",
+            "fan_in": 7,
+            "fan_out": 3,
+            "score": 10,
+            "risk": "HIGH"
+        },
+        {
+            "module": "app.ai.llm_engine",
+            "fan_in": 1,
+            "fan_out": 7,
+            "score": 8,
+            "risk": "MEDIUM"
+        },
+        {
             "module": "app.architecture.architecture_engine",
             "fan_in": 0,
             "fan_out": 8,
@@ -12,6 +26,20 @@
             "fan_in": 5,
             "fan_out": 3,
             "score": 8,
+            "risk": "MEDIUM"
+        },
+        {
+            "module": "app.ai.multi_vector_store",
+            "fan_in": 1,
+            "fan_out": 6,
+            "score": 7,
+            "risk": "MEDIUM"
+        },
+        {
+            "module": "app.ai.rag_pipeline",
+            "fan_in": 0,
+            "fan_out": 7,
+            "score": 7,
             "risk": "MEDIUM"
         },
         {
@@ -29,16 +57,16 @@
             "risk": "MEDIUM"
         },
         {
-            "module": "app.main",
+            "module": "app.ai.embedding_generator",
             "fan_in": 0,
             "fan_out": 6,
             "score": 6,
             "risk": "MEDIUM"
         },
         {
-            "module": "app.ai.embedding_generator",
-            "fan_in": 0,
-            "fan_out": 6,
+            "module": "app.ai.hybrid_retriever",
+            "fan_in": 1,
+            "fan_out": 5,
             "score": 6,
             "risk": "MEDIUM"
         },
@@ -50,9 +78,30 @@
             "risk": "MEDIUM"
         },
         {
+            "module": "app.main",
+            "fan_in": 0,
+            "fan_out": 5,
+            "score": 5,
+            "risk": "MEDIUM"
+        },
+        {
+            "module": "app.ai.citation_engine",
+            "fan_in": 2,
+            "fan_out": 3,
+            "score": 5,
+            "risk": "MEDIUM"
+        },
+        {
             "module": "app.ai.knowledge_document_generator",
             "fan_in": 0,
             "fan_out": 5,
+            "score": 5,
+            "risk": "MEDIUM"
+        },
+        {
+            "module": "app.ai.multi_semantic_search",
+            "fan_in": 1,
+            "fan_out": 4,
             "score": 5,
             "risk": "MEDIUM"
         },
@@ -120,6 +169,34 @@
             "risk": "MEDIUM"
         },
         {
+            "module": "app.ai.multi_embedding_generator",
+            "fan_in": 0,
+            "fan_out": 4,
+            "score": 4,
+            "risk": "LOW"
+        },
+        {
+            "module": "app.ai.performance_monitor",
+            "fan_in": 1,
+            "fan_out": 3,
+            "score": 4,
+            "risk": "LOW"
+        },
+        {
+            "module": "app.ai.prompt_builder_v3",
+            "fan_in": 1,
+            "fan_out": 3,
+            "score": 4,
+            "risk": "LOW"
+        },
+        {
+            "module": "app.ai.query_classifier",
+            "fan_in": 1,
+            "fan_out": 3,
+            "score": 4,
+            "risk": "LOW"
+        },
+        {
             "module": "app.api.router",
             "fan_in": 1,
             "fan_out": 3,
@@ -169,6 +246,20 @@
             "risk": "LOW"
         },
         {
+            "module": "list_models",
+            "fan_in": 0,
+            "fan_out": 3,
+            "score": 3,
+            "risk": "LOW"
+        },
+        {
+            "module": "app.ai.answer_formatter",
+            "fan_in": 1,
+            "fan_out": 2,
+            "score": 3,
+            "risk": "LOW"
+        },
+        {
             "module": "app.ai.chunker",
             "fan_in": 0,
             "fan_out": 3,
@@ -183,6 +274,13 @@
             "risk": "LOW"
         },
         {
+            "module": "app.ai.conversation_memory",
+            "fan_in": 1,
+            "fan_out": 2,
+            "score": 3,
+            "risk": "LOW"
+        },
+        {
             "module": "app.ai.document_generator",
             "fan_in": 0,
             "fan_out": 3,
@@ -190,7 +288,14 @@
             "risk": "LOW"
         },
         {
-            "module": "app.ai.embedding_models",
+            "module": "app.ai.multi_document_chunker",
+            "fan_in": 0,
+            "fan_out": 3,
+            "score": 3,
+            "risk": "LOW"
+        },
+        {
+            "module": "app.ai.repository_overview_generator",
             "fan_in": 1,
             "fan_out": 2,
             "score": 3,
@@ -226,13 +331,6 @@
         },
         {
             "module": "app.core.config",
-            "fan_in": 2,
-            "fan_out": 1,
-            "score": 3,
-            "risk": "LOW"
-        },
-        {
-            "module": "app.core.constants",
             "fan_in": 2,
             "fan_out": 1,
             "score": 3,
@@ -309,6 +407,13 @@
             "risk": "LOW"
         },
         {
+            "module": "app.ai.prompt_builder_v2",
+            "fan_in": 0,
+            "fan_out": 2,
+            "score": 2,
+            "risk": "LOW"
+        },
+        {
             "module": "app.architecture.circular_dependency_detector",
             "fan_in": 1,
             "fan_out": 1,
@@ -319,6 +424,13 @@
             "module": "app.architecture.entry_point_detector",
             "fan_in": 0,
             "fan_out": 2,
+            "score": 2,
+            "risk": "LOW"
+        },
+        {
+            "module": "app.core.constants",
+            "fan_in": 1,
+            "fan_out": 1,
             "score": 2,
             "risk": "LOW"
         },
@@ -496,6 +608,34 @@
             "fan_out": 0,
             "score": 0,
             "risk": "LOW"
+        },
+        {
+            "module": "app.ai.providers.base",
+            "fan_in": 0,
+            "fan_out": 0,
+            "score": 0,
+            "risk": "LOW"
+        },
+        {
+            "module": "app.ai.providers.gemini_provider",
+            "fan_in": 0,
+            "fan_out": 0,
+            "score": 0,
+            "risk": "LOW"
+        },
+        {
+            "module": "app.ai.providers.ollama_provider",
+            "fan_in": 0,
+            "fan_out": 0,
+            "score": 0,
+            "risk": "LOW"
+        },
+        {
+            "module": "app.ai.providers.openai_provider",
+            "fan_in": 0,
+            "fan_out": 0,
+            "score": 0,
+            "risk": "LOW"
         }
     ],
     "patterns": [
@@ -520,12 +660,24 @@
             "name": "Monolithic Architecture",
             "confidence": 0.85,
             "evidence": [
-                "85 modules detected",
+                "105 modules detected",
                 "Single deployable project"
             ]
         }
     ],
     "recommendations": [
+        {
+            "priority": "HIGH",
+            "title": "High Coupling Detected",
+            "module": "app.ai.embedding_models",
+            "recommendation": "Split this module into smaller services to reduce coupling."
+        },
+        {
+            "priority": "MEDIUM",
+            "title": "Medium Coupling",
+            "module": "app.ai.llm_engine",
+            "recommendation": "Consider refactoring this module if it continues to grow."
+        },
         {
             "priority": "MEDIUM",
             "title": "Medium Coupling",
@@ -536,6 +688,18 @@
             "priority": "MEDIUM",
             "title": "Medium Coupling",
             "module": "app.graph.graph_models",
+            "recommendation": "Consider refactoring this module if it continues to grow."
+        },
+        {
+            "priority": "MEDIUM",
+            "title": "Medium Coupling",
+            "module": "app.ai.multi_vector_store",
+            "recommendation": "Consider refactoring this module if it continues to grow."
+        },
+        {
+            "priority": "MEDIUM",
+            "title": "Medium Coupling",
+            "module": "app.ai.rag_pipeline",
             "recommendation": "Consider refactoring this module if it continues to grow."
         },
         {
@@ -553,13 +717,13 @@
         {
             "priority": "MEDIUM",
             "title": "Medium Coupling",
-            "module": "app.main",
+            "module": "app.ai.embedding_generator",
             "recommendation": "Consider refactoring this module if it continues to grow."
         },
         {
             "priority": "MEDIUM",
             "title": "Medium Coupling",
-            "module": "app.ai.embedding_generator",
+            "module": "app.ai.hybrid_retriever",
             "recommendation": "Consider refactoring this module if it continues to grow."
         },
         {
@@ -571,7 +735,25 @@
         {
             "priority": "MEDIUM",
             "title": "Medium Coupling",
+            "module": "app.main",
+            "recommendation": "Consider refactoring this module if it continues to grow."
+        },
+        {
+            "priority": "MEDIUM",
+            "title": "Medium Coupling",
+            "module": "app.ai.citation_engine",
+            "recommendation": "Consider refactoring this module if it continues to grow."
+        },
+        {
+            "priority": "MEDIUM",
+            "title": "Medium Coupling",
             "module": "app.ai.knowledge_document_generator",
+            "recommendation": "Consider refactoring this module if it continues to grow."
+        },
+        {
+            "priority": "MEDIUM",
+            "title": "Medium Coupling",
+            "module": "app.ai.multi_semantic_search",
             "recommendation": "Consider refactoring this module if it continues to grow."
         },
         {
