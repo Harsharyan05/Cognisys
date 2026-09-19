@@ -2283,3 +2283,36 @@ backend/
                         │
                         ▼
                 Cited Answer
+
+
+# Cognisys — Development Report
+
+## Date
+19 September 2026
+
+---
+
+# Development Summary
+
+Today's development focused on strengthening the repository analysis pipeline and establishing a clean GitHub-to-analysis API workflow.
+
+The main objective was to make Cognisys capable of accepting a GitHub repository URL, cloning the repository, running the existing repository analysis systems, and exposing the resulting architecture intelligence through a structured FastAPI response.
+
+---
+
+# 1. GitHub Repository Input
+
+## Completed
+
+Validated and tested the existing GitHub repository cloning pipeline.
+
+### Flow
+
+            ```text
+            GitHub Repository URL
+                  ↓
+            RepositoryCloner
+                  ↓
+            Local Repository
+                  ↓
+            AnalysisService
