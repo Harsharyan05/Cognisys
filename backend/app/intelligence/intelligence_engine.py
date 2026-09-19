@@ -1,4 +1,7 @@
 from app.intelligence.architecture_context import ArchitectureContext
+from app.intelligence.architecture_aware_retriever import (
+    ArchitectureAwareRetriever,
+)
 from app.intelligence.query_classifier import IntelligenceQueryClassifier
 
 
@@ -64,10 +67,21 @@ class IntelligenceEngine:
                 architecture_analysis
             )
 
+            architecture_retriever = ArchitectureAwareRetriever(
+                architecture_analysis
+            )
+
+            architecture_retrieval = (
+                architecture_retriever.retrieve(
+                    question
+                )
+            )
+
             return {
                 "category": "ARCHITECTURE",
                 "architecture": architecture_analysis,
-                "architecture_context": architecture_context,
+                "architecture_context": architecture_retrieval,
+                "structured_architecture_context": architecture_context,
             }
 
         # ---------------------------------------------------------
@@ -133,7 +147,10 @@ class IntelligenceEngine:
             f"{classification.category}"
         )
 
-    def _is_impact_question(self, question: str) -> bool:
+    def _is_impact_question(
+        self,
+        question: str,
+    ) -> bool:
         """
         Determine whether the question asks about the impact
         of modifying or changing something.
