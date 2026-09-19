@@ -134,3 +134,80 @@ def test_both_question_creates_unified_context():
     assert result["architecture_context"].analysis[
         "layers"
     ]["Business"] == ["app/services"]    
+
+def test_both_question_runs_impact_analysis():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "Changing the database module may affect the user service.",
+        "citations": [],
+    }
+
+    architecture_engine.analyze.return_value = {
+        "layers": {},
+        "dependency_graph": {
+            "app.api.users": ["app.services.users"],
+            "app.services.users": ["app.database.users"],
+            "app.database.users": [],
+        },
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [],
+        "recommendations": [],
+    }
+
+    impact_engine = MagicMock()
+
+    impact_engine.analyze.return_value = {
+        "target": "app.database.users",
+        "direct_dependents": ["app.services.users"],
+        "indirect_dependents": ["app.api.users"],
+        "affected_apis": ["app.api.users"],
+        "affected_services": ["app.services.users"],
+        "affected_tests": [],
+        "risk": "HIGH",
+    }
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        impact_engine=impact_engine,
+    )
+
+    result = engine.ask(
+        "What happens if I modify app.database.users?"
+    )
+
+    assert result["category"] == "BOTH"
+    assert result["impact"]["target"] == "app.database.users"
+    assert result["impact"]["risk"] == "HIGH"
+
+    impact_engine.analyze.assert_called_once_with(
+        "app.database.users"
+    )
+
+
+def test_non_impact_question_does_not_run_impact_analysis():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    impact_engine = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "UserService handles user operations.",
+        "citations": [],
+    }
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        impact_engine=impact_engine,
+    )
+
+    result = engine.ask(
+        "What does UserService do?"
+    )
+
+    assert result["category"] == "RAG"
+
+    impact_engine.analyze.assert_not_called()

@@ -10,6 +10,7 @@ class IntelligenceEngine:
     - RAG
     - Architecture
     - Both
+    - Impact-aware analysis through the Both path
 
     Architecture results are wrapped in ArchitectureContext
     so they can be combined with the RAG pipeline.
@@ -19,9 +20,11 @@ class IntelligenceEngine:
         self,
         rag_pipeline,
         architecture_engine,
+        impact_engine=None,
     ):
         self.rag_pipeline = rag_pipeline
         self.architecture_engine = architecture_engine
+        self.impact_engine = impact_engine
         self.query_classifier = IntelligenceQueryClassifier()
 
     def ask(
@@ -86,7 +89,7 @@ class IntelligenceEngine:
                 architecture_context=architecture_context,
             )
 
-            return {
+            result = {
                 "category": "BOTH",
                 "answer": rag_result.get("answer"),
                 "raw_answer": rag_result.get("raw_answer"),
@@ -104,7 +107,78 @@ class IntelligenceEngine:
                 "architecture_context": architecture_context,
             }
 
+            # -----------------------------------------------------
+            # Impact Analysis
+            # -----------------------------------------------------
+
+            if (
+                self.impact_engine is not None
+                and self._is_impact_question(question)
+            ):
+                target = self._extract_impact_target(
+                    question
+                )
+
+                if target:
+                    impact_result = self.impact_engine.analyze(
+                        target
+                    )
+
+                    result["impact"] = impact_result
+
+            return result
+
         raise ValueError(
             f"Unsupported intelligence category: "
             f"{classification.category}"
         )
+
+    def _is_impact_question(self, question: str) -> bool:
+        """
+        Determine whether the question asks about the impact
+        of modifying or changing something.
+        """
+
+        question_lower = question.lower()
+
+        impact_keywords = (
+            "modify",
+            "change",
+            "refactor",
+            "impact",
+            "what happens if",
+        )
+
+        return any(
+            keyword in question_lower
+            for keyword in impact_keywords
+        )
+
+    def _extract_impact_target(
+        self,
+        question: str,
+    ):
+        """
+        Extract the repository target from a question.
+
+        Currently supports the explicit repository/module path
+        form used by the impact-analysis interface.
+        """
+
+        words = question.replace("?", "").split()
+
+        for word in words:
+            cleaned = word.strip(
+                ".,:;()[]{}\"'"
+            )
+
+            if (
+                "." in cleaned
+                and (
+                    cleaned.startswith("app.")
+                    or cleaned.startswith("tests.")
+                )
+            ):
+                return cleaned
+
+        return None
