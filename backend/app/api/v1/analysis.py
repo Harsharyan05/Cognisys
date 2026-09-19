@@ -9,6 +9,7 @@ from fastapi import APIRouter
 
 from app.schemas.analysis import (
     AnalysisRequest,
+    AnalysisResponse,
 )
 
 from app.services.analysis_service import AnalysisService
@@ -22,7 +23,10 @@ router = APIRouter(
 )
 
 
-@router.post("/analyze")
+@router.post(
+    "/analyze",
+    response_model=AnalysisResponse,
+)
 def analyze_repository(request: AnalysisRequest):
 
     clone = RepositoryService.clone_repository(

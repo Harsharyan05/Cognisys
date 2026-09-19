@@ -48,6 +48,10 @@ def test_analyze_repository_success(
     assert data["status"] == "success"
     assert data["repository"]["repository_name"] == "demo"
     assert data["technology"]["python"] is True
+    assert "dependencies" in data
+    assert "architecture" in data
+    assert "overview" in data["architecture"]
+    assert "intelligence" in data["architecture"]	
 
     mock_clone.assert_called_once_with(
         "https://github.com/example/demo"
