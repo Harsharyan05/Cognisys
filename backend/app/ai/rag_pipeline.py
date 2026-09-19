@@ -184,6 +184,7 @@ class RAGPipeline:
     def ask(
         self,
         question: str,
+        architecture_context=None,
     ):
         """
         Complete Retrieval-Augmented Generation
@@ -263,6 +264,7 @@ class RAGPipeline:
                 retrieved_results=retrieved_results,
                 history=self.memory.formatted_history(),
                 debug=False,
+                architecture_context=architecture_context,
             )
 
             self.performance_monitor.stop(

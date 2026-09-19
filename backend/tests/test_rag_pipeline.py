@@ -36,12 +36,14 @@ class FakePromptBuilder:
         retrieved_results,
         history,
         debug=False,
+        architecture_context=None,
     ):
         self.called_with = {
             "question": question,
             "retrieved_results": retrieved_results,
             "history": history,
             "debug": debug,
+            "architecture_context": architecture_context,
         }
 
         return f"PROMPT: {question}"
@@ -314,3 +316,30 @@ def test_pipeline_performance_report_contains_stages():
     assert "Citation Engine" in performance
     assert "Answer Formatter" in performance
     assert "Total Time" in performance
+    
+def test_ask_passes_architecture_context_to_prompt_builder():
+    pipeline = create_pipeline()
+
+    architecture_context = {
+        "layers": {
+            "Business": ["app/services"],
+        },
+        "dependency_graph": {
+            "app/api/router.py": [
+                "app/services/user_service.py"
+            ],
+        },
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [],
+        "recommendations": [],
+    }
+
+    pipeline.ask(
+        "Which layer does UserService belong to?",
+        architecture_context=architecture_context,
+    )
+
+    called = pipeline.prompt_builder.called_with
+
+    assert called["architecture_context"] == architecture_context    

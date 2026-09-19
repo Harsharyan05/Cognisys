@@ -1,10 +1,12 @@
-
 """
 Prompt Builder V3
 
-Builds high-quality prompts for Cognisys by combining
-repository overview, retrieved knowledge, conversation
-history, and the user's question.
+Builds high-quality prompts for Cognisys by combining:
+- Repository overview
+- Retrieved repository knowledge
+- Architecture context
+- Conversation history
+- User question
 
 Author: Harsh Aryan
 Project: Cognisys
@@ -124,10 +126,10 @@ explain layer-by-layer.
 Be concise,
 accurate,
 and repository-aware.
-""".strip()            
+""".strip()
 
     # ---------------------------------------------------------
-    # Build Context
+    # Build Repository Context
     # ---------------------------------------------------------
 
     def _build_context(
@@ -165,50 +167,136 @@ and repository-aware.
 
             sections.append(
                 f"""
-            --------------------------------------------------
-            Chunk {index}
-            --------------------------------------------------
+--------------------------------------------------
+Chunk {index}
+--------------------------------------------------
 
-            Document : {embedding.source_document}
+Document : {embedding.source_document}
 
-            Title : {embedding.title}
+Title : {embedding.title}
 
-            Chunk ID : {embedding.chunk_id}
+Chunk ID : {embedding.chunk_id}
 
-            Word Count : {embedding.word_count}
+Word Count : {embedding.word_count}
 
-            Hybrid Score : {score:.2f}
+Hybrid Score : {score:.2f}
 
-            Semantic Distance : {distance:.4f}
+Semantic Distance : {distance:.4f}
 
-            Content
-            --------------------------------------------------
+Content
+--------------------------------------------------
 
-            {content}
-            """
-                )
-
-            retrieved = "\n".join(
-                sections
+{content}
+"""
             )
 
-            context = f"""
-            ==================================================
-            Repository Overview
-            ==================================================
+        retrieved = "\n".join(
+            sections
+        )
 
-            {overview}
+        context = f"""
+==================================================
+Repository Overview
+==================================================
 
-            ==================================================
-            Relevant Repository Knowledge
-            ==================================================
+{overview}
 
-            {retrieved}
-            """
+==================================================
+Relevant Repository Knowledge
+==================================================
 
-            return context.strip()
-    
-    
+{retrieved}
+"""
+
+        return context.strip()
+
+    # ---------------------------------------------------------
+    # Build Architecture Context
+    # ---------------------------------------------------------
+
+    def _build_architecture_context(
+        self,
+        architecture_context,
+    ) -> str:
+        """
+        Builds the architecture context supplied
+        to the LLM.
+
+        Architecture context is optional. When it is
+        not provided, no architecture section is added.
+        """
+
+        if not architecture_context:
+            return ""
+
+        if hasattr(
+            architecture_context,
+            "analysis",
+        ):
+            architecture_context = (
+                architecture_context.analysis
+            )
+
+        layers = architecture_context.get(
+            "layers",
+            {},
+        )
+
+        dependency_graph = architecture_context.get(
+            "dependency_graph",
+            {},
+        )
+
+        cycles = architecture_context.get(
+            "cycles",
+            [],
+        )
+
+        hotspots = architecture_context.get(
+            "hotspots",
+            [],
+        )
+
+        patterns = architecture_context.get(
+            "patterns",
+            [],
+        )
+
+        recommendations = architecture_context.get(
+            "recommendations",
+            [],
+        )
+
+        return f"""
+==================================================
+Architecture Intelligence
+==================================================
+
+Layers
+--------------------------------------------------
+{layers}
+
+Dependency Graph
+--------------------------------------------------
+{dependency_graph}
+
+Circular Dependencies
+--------------------------------------------------
+{cycles}
+
+Hotspots
+--------------------------------------------------
+{hotspots}
+
+Architecture Patterns
+--------------------------------------------------
+{patterns}
+
+Recommendations
+--------------------------------------------------
+{recommendations}
+""".strip()
+
     # ---------------------------------------------------------
     # Build Conversation History
     # ---------------------------------------------------------
@@ -332,16 +420,27 @@ Produce a clear, structured, professional answer.
         retrieved_results,
         history: List[Tuple[str, str]] | None = None,
         debug: bool = False,
+        architecture_context=None,
     ) -> str:
         """
         Builds the complete prompt that will
         be sent to the LLM.
+
+        architecture_context is optional and allows
+        architecture intelligence to be supplied
+        alongside normal RAG context.
         """
 
         system_prompt = self._system_prompt()
 
         repository_context = self._build_context(
             retrieved_results
+        )
+
+        architecture_section = (
+            self._build_architecture_context(
+                architecture_context
+            )
         )
 
         conversation = self._build_history(
@@ -370,6 +469,20 @@ REPOSITORY CONTEXT
 ==================================================
 
 {repository_context}
+"""
+
+        if architecture_section:
+
+            prompt += f"""
+
+==================================================
+ARCHITECTURE CONTEXT
+==================================================
+
+{architecture_section}
+"""
+
+        prompt += f"""
 
 ==================================================
 USER QUESTION
@@ -444,6 +557,7 @@ USER QUESTION
         question: str,
         retrieved_results,
         history: List[Tuple[str, str]] | None = None,
+        architecture_context=None,
     ):
         """
         Prints the generated prompt.
@@ -453,6 +567,7 @@ USER QUESTION
             question=question,
             retrieved_results=retrieved_results,
             history=history,
+            architecture_context=architecture_context,
             debug=False,
         )
 

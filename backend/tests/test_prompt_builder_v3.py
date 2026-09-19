@@ -73,3 +73,43 @@ def test_prompt_handles_empty_question():
 
     assert prompt is not None
     assert isinstance(prompt, str)
+
+def test_prompt_with_architecture_context():
+
+    builder = PromptBuilderV3()
+
+    architecture_context = {
+        "layers": {
+            "Presentation": ["app/api"],
+            "Business": ["app/services"],
+        },
+        "dependency_graph": {
+            "app/api/router.py": [
+                "app/services/user_service.py"
+            ],
+        },
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [
+            {
+                "name": "Layered Architecture",
+                "confidence": 0.95,
+            }
+        ],
+        "recommendations": [],
+    }
+
+    prompt = builder.build(
+        question="Which layer does UserService belong to?",
+        retrieved_results=[],
+        history=[],
+        architecture_context=architecture_context,
+    )
+
+    assert prompt is not None
+    assert isinstance(prompt, str)
+
+    assert "Presentation" in prompt
+    assert "Business" in prompt
+    assert "app/services" in prompt
+    assert "Layered Architecture" in prompt    
