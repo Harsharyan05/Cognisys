@@ -3,6 +3,8 @@ from app.parser.technology_detector import TechnologyDetector
 from app.parser.dependency_analyzer import DependencyAnalyzer
 from app.parser.architecture_analyzer import ArchitectureAnalyzer
 
+from app.architecture.architecture_engine import ArchitectureEngine
+
 
 class AnalysisService:
 
@@ -13,10 +15,34 @@ class AnalysisService:
         detector = TechnologyDetector()
         dependency = DependencyAnalyzer()
         architecture = ArchitectureAnalyzer()
+        architecture_engine = ArchitectureEngine(
+            repository_path
+        )
+
+        repository_result = scanner.scan(
+            repository_path
+        )
+
+        technology_result = detector.detect(
+            repository_path
+        )
+
+        dependency_result = dependency.analyze(
+            repository_path
+        )
+
+        architecture_result = architecture.analyze(
+            repository_path
+        )
+
+        architecture_intelligence = architecture_engine.analyze()
 
         return {
-            "repository": scanner.scan(repository_path),
-            "technology": detector.detect(repository_path),
-            "dependencies": dependency.analyze(repository_path),
-            "architecture": architecture.analyze(repository_path),
+            "repository": repository_result,
+            "technology": technology_result,
+            "dependencies": dependency_result,
+            "architecture": {
+                "overview": architecture_result,
+                "intelligence": architecture_intelligence,
+            },
         }
