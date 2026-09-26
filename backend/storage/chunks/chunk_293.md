@@ -1,5 +1,7 @@
-# Frameworks
+# Medium Coupling
 
-Source Document: technologies.md
+Source Document: repository_summary.md
 
-None Detected
+- Priority: MEDIUM
+- Module: app.parser.repository_cloner
+- Recommendation: Consider refactoring this module if it continues to grow.

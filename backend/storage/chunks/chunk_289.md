@@ -1,5 +1,7 @@
-# APIRouter
+# Medium Coupling
 
-Source Document: services.md
+Source Document: repository_summary.md
 
-File : app\api\v1\repository.py
+- Priority: MEDIUM
+- Module: app.main
+- Recommendation: Consider refactoring this module if it continues to grow.

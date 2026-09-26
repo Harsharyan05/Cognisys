@@ -1,8 +1,11 @@
-# Monolithic Architecture
+# Table of Contents
 
 Source Document: repository_summary.md
 
-- Confidence: 0.85
-- Evidence:
-  - 77 modules detected
-  - Single deployable project
+- Repository Statistics
+- Repository Health
+- Architecture Layers
+- Repository Hotspots
+- Architecture Patterns
+- Circular Dependencies
+- Recommendations

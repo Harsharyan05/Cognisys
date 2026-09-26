@@ -6,7 +6,7 @@ Project: Cognisys
 """
 
 from fastapi import APIRouter
-
+from app.ai.repository_indexer import RepositoryIndexer
 from app.schemas.intelligence import (
     IntelligenceAskRequest,
     IntelligenceAskResponse,
@@ -51,7 +51,15 @@ def ask_intelligence(
 
     repository_path = clone["local_path"]
 
-    rag_pipeline = RAGPipeline()
+    indexer = RepositoryIndexer(
+        repository_path
+    )
+
+    index_result = indexer.index()
+
+    rag_pipeline = RAGPipeline(
+        vector_store_directory=index_result["vector_store"]
+    )
 
     architecture_engine = ArchitectureEngine(
         repository_path

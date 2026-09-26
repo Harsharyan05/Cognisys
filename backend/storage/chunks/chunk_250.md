@@ -1,8 +1,5 @@
-# Repository Health
+# Services
 
-Source Document: repository_summary.md
+Source Document: repository_overview.md
 
-- Overall Health: **GOOD**
-- High Risk Modules: 0
-- Circular Dependencies: 0
-- Architecture Patterns: 3
+Detected 8 service sections.

@@ -1,7 +1,55 @@
-# Medium Coupling
+# LOW Risk
 
 Source Document: repository_summary.md
 
-- Priority: MEDIUM
-- Module: app.services.knowledge_graph_service
-- Recommendation: Consider refactoring this module if it continues to grow.
+- **app.api.router** | Fan-In: 1 | Fan-Out: 3 | Score: 4
+- **app.architecture.dependency_graph** | Fan-In: 1 | Fan-Out: 3 | Score: 4
+- **app.core.logger** | Fan-In: 2 | Fan-Out: 2 | Score: 4
+- **app.graph.entity_extractor** | Fan-In: 1 | Fan-Out: 3 | Score: 4
+- **app.graph.graph_builder** | Fan-In: 1 | Fan-Out: 3 | Score: 4
+- **app.parser.dependency_analyzer** | Fan-In: 2 | Fan-Out: 2 | Score: 4
+- **app.parser.technology_detector** | Fan-In: 2 | Fan-Out: 2 | Score: 4
+- **app.api.v1.repository** | Fan-In: 1 | Fan-Out: 3 | Score: 4
+- **app.ai.document_generator** | Fan-In: 0 | Fan-Out: 3 | Score: 3
+- **app.architecture.architecture_pattern_detector** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.architecture.layer_detector** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.architecture.recommendation_models** | Fan-In: 2 | Fan-Out: 1 | Score: 3
+- **app.architecture.service_detector** | Fan-In: 0 | Fan-Out: 3 | Score: 3
+- **app.core.config** | Fan-In: 2 | Fan-Out: 1 | Score: 3
+- **app.core.constants** | Fan-In: 2 | Fan-Out: 1 | Score: 3
+- **app.database.db** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.graph.relationship_extractor** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.parser.architecture_analyzer** | Fan-In: 2 | Fan-Out: 1 | Score: 3
+- **app.parser.file_classifier** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.parser.import_graph_builder** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.parser.python_ast_parser** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.parser.repository_scanner** | Fan-In: 2 | Fan-Out: 1 | Score: 3
+- **app.parser.symbol_extractor** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.schemas.analysis** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.schemas.repository** | Fan-In: 1 | Fan-Out: 2 | Score: 3
+- **app.architecture.circular_dependency_detector** | Fan-In: 1 | Fan-Out: 1 | Score: 2
+- **app.architecture.entry_point_detector** | Fan-In: 0 | Fan-Out: 2 | Score: 2
+- **app.database.session** | Fan-In: 0 | Fan-Out: 2 | Score: 2
+- **app.graph.graph_serializer** | Fan-In: 1 | Fan-Out: 1 | Score: 2
+- **app.parser.call_graph_builder** | Fan-In: 0 | Fan-Out: 2 | Score: 2
+- **app.models.repository_metadeta** | Fan-In: 0 | Fan-Out: 1 | Score: 1
+- **app.ai.chat** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.ai.llm** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.ai.prompt_templates** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.ai.reasoning** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.database.models** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.graph.blast_radius** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.graph.graph_utils** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.security.dependency_checker** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.security.permission_checker** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.security.report_generator** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.security.secret_scanner** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.services.analyze_repository** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.services.generate_report** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.workflows.github_actions** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.workflows.trigger_parser** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.workflows.workflow_graph** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.api.v1.chat** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.api.v1.graph** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.api.v1.security** | Fan-In: 0 | Fan-Out: 0 | Score: 0
+- **app.api.v1.workflow** | Fan-In: 0 | Fan-Out: 0 | Score: 0

@@ -23,6 +23,7 @@ class MultiSemanticSearch:
     def __init__(
         self,
         model_name: str = "sentence-transformers/all-MiniLM-L6-v2",
+        vector_store_directory: str = "storage/vector_db",
     ):
 
         print("Loading embedding model...")
@@ -31,8 +32,10 @@ class MultiSemanticSearch:
 
         print("Embedding model loaded.")
 
-        self.vector_store = MultiVectorStore()
-
+        self.vector_store = MultiVectorStore(
+            output_directory=vector_store_directory
+        )
+        
     def search(
         self,
         query: str,

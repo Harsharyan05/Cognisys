@@ -1,5 +1,3 @@
-# Presentation
+## Circular Dependencies
 
-Source Document: architecture.md
-
-- app\api
+No circular dependencies detected.

@@ -1,7 +1,7 @@
-# Repository Summary
+# Repository Overview
 
-Source Document: repository_summary.md
+Source Document: repository_overview.md
 
-**Repository:** backend
+This repository has been automatically analysed by Cognisys.
 
-**Generated On:** 01-08-2026 16:46:18
+It contains architecture knowledge, dependency analysis, services, APIs, hotspots and recommendations.

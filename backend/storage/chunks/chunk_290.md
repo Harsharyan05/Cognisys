@@ -1,7 +1,7 @@
-# API Endpoint
+# Medium Coupling
 
-Source Document: services.md
+Source Document: repository_summary.md
 
-Method : POST
-Function : clone_repository
-File : app\api\v1\repository.py
+- Priority: MEDIUM
+- Module: app.architecture.architecture_models
+- Recommendation: Consider refactoring this module if it continues to grow.

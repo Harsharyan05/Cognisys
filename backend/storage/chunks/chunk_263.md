@@ -1,9 +1,15 @@
-# Layered Architecture
+# Knowledge Documents
 
-Source Document: repository_summary.md
+Source Document: repository_overview.md
 
-- Confidence: 0.95
-- Evidence:
-  - Business layer detected
-  - Persistence layer detected
-  - Presentation layer detected
+- apis.md
+- architecture.md
+- architecture_patterns.md
+- dependency_graph.md
+- hotspots.md
+- recommendations.md
+- repository_summary.md
+- services.md
+- technologies.md
+
+End of Repository Overview.

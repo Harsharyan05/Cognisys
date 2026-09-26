@@ -1,3 +1,4 @@
+from pathlib import Path
 from app.ai.rag_pipeline import RAGPipeline
 from app.ai.citation_engine import Citation
 
@@ -343,3 +344,99 @@ def test_ask_passes_architecture_context_to_prompt_builder():
     called = pipeline.prompt_builder.called_with
 
     assert called["architecture_context"] == architecture_context    
+
+def test_rag_pipeline_accepts_repository_vector_store(
+    monkeypatch,
+    tmp_path,
+):
+    import app.ai.rag_pipeline as rag_pipeline_module
+
+    created_retrievers = []
+
+    class FakeHybridRetriever:
+        def __init__(
+            self,
+            vector_store_directory="storage/vector_db",
+        ):
+            self.vector_store_directory = Path(
+                vector_store_directory
+            )
+
+            created_retrievers.append(self)
+
+    monkeypatch.setattr(
+        rag_pipeline_module,
+        "HybridRetriever",
+        FakeHybridRetriever,
+    )
+
+    # Prevent real dependencies from loading.
+    class FakePromptBuilder:
+        pass
+
+    class FakeLLM:
+        pass
+
+    class FakeCitationEngine:
+        pass
+
+    class FakeAnswerFormatter:
+        pass
+
+    class FakePerformanceMonitor:
+        pass
+
+    monkeypatch.setattr(
+        rag_pipeline_module,
+        "PromptBuilderV3",
+        FakePromptBuilder,
+    )
+
+    monkeypatch.setattr(
+        rag_pipeline_module,
+        "LLMEngine",
+        FakeLLM,
+    )
+
+    monkeypatch.setattr(
+        rag_pipeline_module,
+        "CitationEngine",
+        FakeCitationEngine,
+    )
+
+    monkeypatch.setattr(
+        rag_pipeline_module,
+        "AnswerFormatter",
+        FakeAnswerFormatter,
+    )
+
+    monkeypatch.setattr(
+        rag_pipeline_module,
+        "PerformanceMonitor",
+        FakePerformanceMonitor,
+    )
+
+    vector_store_directory = (
+        tmp_path
+        / "repositories"
+        / "repo_a"
+        / "vector_db"
+    )
+
+    pipeline = RAGPipeline(
+        vector_store_directory=str(
+            vector_store_directory
+        )
+    )
+
+    assert len(created_retrievers) == 1
+
+    assert (
+        created_retrievers[0].vector_store_directory
+        == vector_store_directory
+    )
+
+    assert (
+        pipeline.hybrid_retriever.vector_store_directory
+        == vector_store_directory
+    )    

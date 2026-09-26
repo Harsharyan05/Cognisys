@@ -1,7 +1,9 @@
-# GET
+## Table of Contents
 
-Source Document: apis.md
-
-Function : root
-
-File : app\main.py
+- Repository Statistics
+- Repository Health
+- Architecture Layers
+- Repository Hotspots
+- Architecture Patterns
+- Circular Dependencies
+- Recommendations

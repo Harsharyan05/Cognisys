@@ -1,7 +1,7 @@
-# Medium Coupling
+# Persistence
 
 Source Document: repository_summary.md
 
-- Priority: MEDIUM
-- Module: app.main
-- Recommendation: Consider refactoring this module if it continues to grow.
+- app\database
+- app\models
+- app\schemas

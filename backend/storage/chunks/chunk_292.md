@@ -1,5 +1,7 @@
-# Languages
+# Medium Coupling
 
-Source Document: technologies.md
+Source Document: repository_summary.md
 
-- Python
+- Priority: MEDIUM
+- Module: app.architecture.recommendation_engine
+- Recommendation: Consider refactoring this module if it continues to grow.

@@ -1,5 +1,7 @@
-# APIRouter
+# Medium Coupling
 
-Source Document: services.md
+Source Document: repository_summary.md
 
-File : app\api\v1\analysis.py
+- Priority: MEDIUM
+- Module: app.architecture.report_generator
+- Recommendation: Consider refactoring this module if it continues to grow.

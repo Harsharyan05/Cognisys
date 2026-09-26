@@ -1,5 +1,7 @@
-# Deployment
+# Medium Coupling
 
-Source Document: technologies.md
+Source Document: repository_summary.md
 
-- Docker
+- Priority: MEDIUM
+- Module: app.services.knowledge_graph_service
+- Recommendation: Consider refactoring this module if it continues to grow.

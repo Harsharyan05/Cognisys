@@ -2,6 +2,7 @@
     {
         "chunk_id": 1,
         "title": "Repository Summary",
+        "source_document": "storage/documents/repository_summary.md",
         "dimension": 384,
         "word_count": 9,
         "vector": [
@@ -394,6 +395,7 @@
     {
         "chunk_id": 2,
         "title": "Table of Contents",
+        "source_document": "storage/documents/repository_summary.md",
         "dimension": 384,
         "word_count": 24,
         "vector": [
@@ -786,6 +788,7 @@
     {
         "chunk_id": 3,
         "title": "Repository Statistics",
+        "source_document": "storage/documents/repository_summary.md",
         "dimension": 384,
         "word_count": 24,
         "vector": [
@@ -1178,6 +1181,7 @@
     {
         "chunk_id": 4,
         "title": "Repository Health",
+        "source_document": "storage/documents/repository_summary.md",
         "dimension": 384,
         "word_count": 20,
         "vector": [
@@ -1570,6 +1574,7 @@
     {
         "chunk_id": 5,
         "title": "Architecture Layers",
+        "source_document": "storage/documents/repository_summary.md",
         "dimension": 384,
         "word_count": 39,
         "vector": [
@@ -1962,6 +1967,7 @@
     {
         "chunk_id": 6,
         "title": "Repository Hotspots",
+        "source_document": "storage/documents/repository_summary.md",
         "dimension": 384,
         "word_count": 706,
         "vector": [
@@ -2354,6 +2360,7 @@
     {
         "chunk_id": 7,
         "title": "Architecture Patterns",
+        "source_document": "storage/documents/repository_summary.md",
         "dimension": 384,
         "word_count": 54,
         "vector": [
@@ -2746,6 +2753,7 @@
     {
         "chunk_id": 8,
         "title": "Circular Dependencies",
+        "source_document": "storage/documents/repository_summary.md",
         "dimension": 384,
         "word_count": 7,
         "vector": [
@@ -3138,6 +3146,7 @@
     {
         "chunk_id": 9,
         "title": "Recommendations",
+        "source_document": "storage/documents/repository_summary.md",
         "dimension": 384,
         "word_count": 278,
         "vector": [

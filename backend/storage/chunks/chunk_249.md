@@ -1,10 +1,10 @@
-# Repository Statistics
+# Architecture
 
-Source Document: repository_summary.md
+Source Document: repository_overview.md
 
-- Modules: 77
-- Architecture Layers: 6
-- Hotspots: 63
-- Patterns Detected: 3
-- Circular Dependencies: 0
-- Recommendations: 14
+- Knowledge
+- Presentation
+- Infrastructure
+- Persistence
+- Analysis
+- Business

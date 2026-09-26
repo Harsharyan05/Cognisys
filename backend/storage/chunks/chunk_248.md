@@ -1,11 +1,6 @@
-# Table of Contents
+# Repository Statistics
 
-Source Document: repository_summary.md
+Source Document: repository_overview.md
 
-- Repository Statistics
-- Repository Health
-- Architecture Layers
-- Repository Hotspots
-- Architecture Patterns
-- Circular Dependencies
-- Recommendations
+- Knowledge Documents : 9
+- Total Size : 29047 bytes

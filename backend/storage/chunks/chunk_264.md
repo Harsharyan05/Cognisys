@@ -1,8 +1,7 @@
-# MVC
+# Repository Summary
 
 Source Document: repository_summary.md
 
-- Confidence: 0.60
-- Evidence:
-  - Presentation layer detected
-  - Persistence layer detected
+**Repository:** backend
+
+**Generated On:** 01-08-2026 16:46:18

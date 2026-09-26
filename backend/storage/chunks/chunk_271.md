@@ -1,7 +1,7 @@
-# Medium Coupling
+# Infrastructure
 
 Source Document: repository_summary.md
 
-- Priority: MEDIUM
-- Module: app.services.repository_service
-- Recommendation: Consider refactoring this module if it continues to grow.
+- app\architecture
+- app\core
+- app\security

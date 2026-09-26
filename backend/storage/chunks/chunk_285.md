@@ -1,7 +1,7 @@
-# API Endpoint
+# Medium Coupling
 
-Source Document: services.md
+Source Document: repository_summary.md
 
-Method : GET
-Function : health_check
-File : app\main.py
+- Priority: MEDIUM
+- Module: app.architecture.architecture_engine
+- Recommendation: Consider refactoring this module if it continues to grow.

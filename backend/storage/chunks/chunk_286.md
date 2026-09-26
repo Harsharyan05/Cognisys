@@ -1,5 +1,7 @@
-# APIRouter
+# Medium Coupling
 
-Source Document: services.md
+Source Document: repository_summary.md
 
-File : app\api\router.py
+- Priority: MEDIUM
+- Module: app.graph.graph_models
+- Recommendation: Consider refactoring this module if it continues to grow.

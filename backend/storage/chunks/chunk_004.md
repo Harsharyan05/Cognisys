@@ -1,7 +1,6 @@
-# POST
+## Repository Health
 
-Source Document: apis.md
-
-Function : analyze_repository
-
-File : app\api\v1\analysis.py
+- Overall Health: **GOOD**
+- High Risk Modules: 0
+- Circular Dependencies: 0
+- Architecture Patterns: 3

@@ -1,4 +1,8 @@
-# Services
+# Monolithic Architecture
 
-Source Document: services.md
+Source Document: repository_summary.md
 
+- Confidence: 0.85
+- Evidence:
+  - 77 modules detected
+  - Single deployable project

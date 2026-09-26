@@ -1,5 +1,5 @@
-# HIGH Risk
+# Architecture Patterns
 
-Source Document: repository_summary.md
+Source Document: repository_overview.md
 
-None
+3 architecture patterns detected.

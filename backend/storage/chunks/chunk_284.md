@@ -1,7 +1,4 @@
-# API Endpoint
+# Recommendations
 
-Source Document: services.md
+Source Document: repository_summary.md
 
-Method : GET
-Function : root
-File : app\main.py

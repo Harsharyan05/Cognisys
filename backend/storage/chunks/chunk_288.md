@@ -1,7 +1,7 @@
-# API Endpoint
+# Medium Coupling
 
-Source Document: services.md
+Source Document: repository_summary.md
 
-Method : POST
-Function : analyze_repository
-File : app\api\v1\analysis.py
+- Priority: MEDIUM
+- Module: app.services.repository_service
+- Recommendation: Consider refactoring this module if it continues to grow.
