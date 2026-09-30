@@ -3,6 +3,7 @@ from app.intelligence.architecture_aware_retriever import (
     ArchitectureAwareRetriever,
 )
 from app.intelligence.query_classifier import IntelligenceQueryClassifier
+from app.intelligence.unified_context import UnifiedContext
 
 
 class IntelligenceEngine:
@@ -15,8 +16,8 @@ class IntelligenceEngine:
     - Both
     - Impact-aware analysis through the Both path
 
-    Architecture results are wrapped in ArchitectureContext
-    so they can be combined with the RAG pipeline.
+    UnifiedContext combines the different intelligence sources
+    so downstream components can consume a single context object.
     """
 
     def __init__(
@@ -103,6 +104,18 @@ class IntelligenceEngine:
                 architecture_context=architecture_context,
             )
 
+            # -----------------------------------------------------
+            # Create initial unified context
+            # -----------------------------------------------------
+
+            unified_context = UnifiedContext(
+                rag_context=rag_result.get(
+                    "rag_context",
+                    [],
+                ),
+                architecture_context=architecture_context,
+            )
+
             result = {
                 "category": "BOTH",
                 "answer": rag_result.get("answer"),
@@ -119,6 +132,7 @@ class IntelligenceEngine:
                 ),
                 "architecture": architecture_analysis,
                 "architecture_context": architecture_context,
+                "unified_context": unified_context,
             }
 
             # -----------------------------------------------------
@@ -139,6 +153,16 @@ class IntelligenceEngine:
                     )
 
                     result["impact"] = impact_result
+
+                    # Add impact information to UnifiedContext
+                    result["unified_context"] = UnifiedContext(
+                        rag_context=rag_result.get(
+                            "rag_context",
+                            [],
+                        ),
+                        architecture_context=architecture_context,
+                        impact_context=impact_result,
+                    )
 
             return result
 
@@ -176,10 +200,14 @@ class IntelligenceEngine:
         question: str,
     ):
         """
-        Extract the repository target from a question.
+        Extract a repository file or module target from a question.
 
-        Currently supports the explicit repository/module path
-        form used by the impact-analysis interface.
+        Supports both:
+
+        - app.services.auth_service
+        - app/services/auth_service.py
+        - tests.test_auth
+        - tests/test_auth.py
         """
 
         words = question.replace("?", "").split()
@@ -189,12 +217,17 @@ class IntelligenceEngine:
                 ".,:;()[]{}\"'"
             )
 
+            # Repository file paths
             if (
-                "." in cleaned
-                and (
-                    cleaned.startswith("app.")
-                    or cleaned.startswith("tests.")
-                )
+                cleaned.startswith("app/")
+                or cleaned.startswith("tests/")
+            ):
+                return cleaned
+
+            # Python module paths
+            if (
+                cleaned.startswith("app.")
+                or cleaned.startswith("tests.")
             ):
                 return cleaned
 
