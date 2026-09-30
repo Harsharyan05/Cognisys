@@ -160,6 +160,7 @@ class IntelligenceEngine:
                     [],
                 ),
                 architecture_context=architecture_context,
+                architecture_citations=architecture_citations,
                 symbol_context=rag_result.get(
                     "symbol_context",
                     [],

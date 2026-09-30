@@ -209,3 +209,61 @@ def test_unified_context_does_not_modify_rag_context(
     )
 
     assert context.get_rag_context() == original_rag_context
+    
+def test_architecture_citations_are_stored():
+    citations = [
+        {
+            "id": "ARCH-LAYER-001",
+            "type": "architecture_layer",
+        }
+    ]
+
+    context = UnifiedContext(
+        architecture_citations=citations
+    )
+
+    assert context.get_architecture_citations() == citations
+
+
+def test_architecture_citations_default_to_empty_list():
+    context = UnifiedContext()
+
+    assert context.get_architecture_citations() == []
+
+
+def test_architecture_citations_are_preserved():
+    citations = [
+        {
+            "id": "ARCH-DEP-001",
+            "type": "architecture_dependency",
+        },
+        {
+            "id": "ARCH-HOTSPOT-001",
+            "type": "architecture_hotspot",
+        },
+    ]
+
+    context = UnifiedContext(
+        architecture_citations=citations
+    )
+
+    assert len(
+        context.get_architecture_citations()
+    ) == 2
+
+
+def test_architecture_citations_are_in_to_dict():
+    citations = [
+        {
+            "id": "ARCH-LAYER-001",
+            "type": "architecture_layer",
+        }
+    ]
+
+    context = UnifiedContext(
+        architecture_citations=citations
+    )
+
+    result = context.to_dict()
+
+    assert result["architecture_citations"] == citations    
