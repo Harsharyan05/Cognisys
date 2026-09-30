@@ -55,7 +55,8 @@ class RAGPipeline:
         self,
         memory_size: int = 10,
         vector_store_directory: str = "storage/vector_db",
-    ):
+        repository_path=None,
+        ):
 
         print("Initializing RAG Pipeline...")
 
@@ -71,9 +72,10 @@ class RAGPipeline:
         # Hybrid_Retriever
         # ---------------------------------------------------------
         self.hybrid_retriever = HybridRetriever(
-             vector_store_directory=vector_store_directory
+             vector_store_directory=vector_store_directory,
+             repository_path=repository_path,
         )
-
+        
         # ---------------------------------------------------------
         # Prompt Builder
         # ---------------------------------------------------------
@@ -388,6 +390,7 @@ class RAGPipeline:
                     self.memory.size(),
 
             }
+                
 
 
 

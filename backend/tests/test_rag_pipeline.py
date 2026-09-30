@@ -357,10 +357,12 @@ def test_rag_pipeline_accepts_repository_vector_store(
         def __init__(
             self,
             vector_store_directory="storage/vector_db",
+            repository_path=None,
         ):
             self.vector_store_directory = Path(
                 vector_store_directory
             )
+            self.repository_path = repository_path
 
             created_retrievers.append(self)
 
@@ -439,4 +441,22 @@ def test_rag_pipeline_accepts_repository_vector_store(
     assert (
         pipeline.hybrid_retriever.vector_store_directory
         == vector_store_directory
-    )    
+    )
+
+def test_rag_pipeline_passes_repository_path_to_hybrid_retriever(
+    tmp_path,
+):
+    repository = tmp_path / "sample_repo"
+    repository.mkdir()
+
+    pipeline = RAGPipeline(
+        vector_store_directory=str(
+            tmp_path / "vector_db"
+        ),
+        repository_path=repository,
+    )
+
+    assert (
+        pipeline.hybrid_retriever.repository_path
+        == repository
+    )        

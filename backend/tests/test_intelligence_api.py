@@ -15,6 +15,10 @@ from app.main import app
 client = TestClient(app)
 
 
+# ============================================================
+# RAG
+# ============================================================
+
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
 @patch("app.api.v1.intelligence.IntelligenceEngine")
@@ -22,11 +26,15 @@ def test_intelligence_ask_rag(
     mock_engine,
     mock_clone,
     mock_indexer,
+    tmp_path,
 ):
+    repository_path = tmp_path / "demo"
+    repository_path.mkdir()
+
     mock_clone.return_value = {
         "status": "success",
         "repository_name": "demo",
-        "local_path": "C:\\repo\\demo",
+        "local_path": str(repository_path),
     }
 
     mock_indexer.return_value.index.return_value = {
@@ -66,7 +74,7 @@ def test_intelligence_ask_rag(
     )
 
     mock_indexer.assert_called_once_with(
-        "C:\\repo\\demo"
+        str(repository_path)
     )
 
     mock_indexer.return_value.index.assert_called_once()
@@ -75,6 +83,10 @@ def test_intelligence_ask_rag(
         "What does the authentication service do?"
     )
 
+
+# ============================================================
+# INVALID URL
+# ============================================================
 
 def test_intelligence_ask_invalid_url():
     response = client.post(
@@ -88,6 +100,10 @@ def test_intelligence_ask_invalid_url():
     assert response.status_code == 422
 
 
+# ============================================================
+# EMPTY QUESTION
+# ============================================================
+
 def test_intelligence_ask_empty_question():
     response = client.post(
         "/api/v1/intelligence/ask",
@@ -100,6 +116,10 @@ def test_intelligence_ask_empty_question():
     assert response.status_code == 422
 
 
+# ============================================================
+# ARCHITECTURE
+# ============================================================
+
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
 @patch("app.api.v1.intelligence.IntelligenceEngine")
@@ -107,11 +127,15 @@ def test_intelligence_ask_architecture(
     mock_engine,
     mock_clone,
     mock_indexer,
+    tmp_path,
 ):
+    repository_path = tmp_path / "demo"
+    repository_path.mkdir()
+
     mock_clone.return_value = {
         "status": "success",
         "repository_name": "demo",
-        "local_path": "C:\\repo\\demo",
+        "local_path": str(repository_path),
     }
 
     mock_indexer.return_value.index.return_value = {
@@ -157,7 +181,7 @@ def test_intelligence_ask_architecture(
     )
 
     mock_indexer.assert_called_once_with(
-        "C:\\repo\\demo"
+        str(repository_path)
     )
 
     mock_indexer.return_value.index.assert_called_once()
@@ -167,6 +191,10 @@ def test_intelligence_ask_architecture(
     )
 
 
+# ============================================================
+# BOTH
+# ============================================================
+
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
 @patch("app.api.v1.intelligence.IntelligenceEngine")
@@ -174,11 +202,15 @@ def test_intelligence_ask_both(
     mock_engine,
     mock_clone,
     mock_indexer,
+    tmp_path,
 ):
+    repository_path = tmp_path / "demo"
+    repository_path.mkdir()
+
     mock_clone.return_value = {
         "status": "success",
         "repository_name": "demo",
-        "local_path": "C:\\repo\\demo",
+        "local_path": str(repository_path),
     }
 
     mock_indexer.return_value.index.return_value = {
@@ -230,7 +262,7 @@ def test_intelligence_ask_both(
     )
 
     mock_indexer.assert_called_once_with(
-        "C:\\repo\\demo"
+        str(repository_path)
     )
 
     mock_indexer.return_value.index.assert_called_once()
@@ -240,6 +272,10 @@ def test_intelligence_ask_both(
     )
 
 
+# ============================================================
+# IMPACT
+# ============================================================
+
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
 @patch("app.api.v1.intelligence.IntelligenceEngine")
@@ -247,11 +283,15 @@ def test_intelligence_ask_impact(
     mock_engine,
     mock_clone,
     mock_indexer,
+    tmp_path,
 ):
+    repository_path = tmp_path / "demo"
+    repository_path.mkdir()
+
     mock_clone.return_value = {
         "status": "success",
         "repository_name": "demo",
-        "local_path": "C:\\repo\\demo",
+        "local_path": str(repository_path),
     }
 
     mock_indexer.return_value.index.return_value = {
@@ -317,7 +357,7 @@ def test_intelligence_ask_impact(
     )
 
     mock_indexer.assert_called_once_with(
-        "C:\\repo\\demo"
+        str(repository_path)
     )
 
     mock_indexer.return_value.index.assert_called_once()
@@ -326,6 +366,10 @@ def test_intelligence_ask_impact(
         "What happens if I modify app/services/auth_service.py?"
     )
 
+
+# ============================================================
+# INDEXING BEFORE RAG
+# ============================================================
 
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
@@ -336,11 +380,15 @@ def test_intelligence_ask_indexes_repository_before_rag(
     mock_rag_pipeline,
     mock_clone,
     mock_indexer,
+    tmp_path,
 ):
+    repository_path = tmp_path / "demo"
+    repository_path.mkdir()
+
     mock_clone.return_value = {
         "status": "success",
         "repository_name": "demo",
-        "local_path": "C:\\repo\\demo",
+        "local_path": str(repository_path),
     }
 
     mock_indexer.return_value.index.return_value = {
@@ -378,7 +426,7 @@ def test_intelligence_ask_indexes_repository_before_rag(
     )
 
     mock_indexer.assert_called_once_with(
-        "C:\\repo\\demo"
+        str(repository_path)
     )
 
     mock_indexer.return_value.index.assert_called_once()
@@ -386,5 +434,6 @@ def test_intelligence_ask_indexes_repository_before_rag(
     mock_rag_pipeline.assert_called_once_with(
         vector_store_directory=(
             "storage/repositories/demo/vector_db"
-        )
+        ),
+        repository_path=str(repository_path),
     )

@@ -58,7 +58,8 @@ def ask_intelligence(
     index_result = indexer.index()
 
     rag_pipeline = RAGPipeline(
-        vector_store_directory=index_result["vector_store"]
+        vector_store_directory=index_result["vector_store"],
+        repository_path=repository_path,
     )
 
     architecture_engine = ArchitectureEngine(
