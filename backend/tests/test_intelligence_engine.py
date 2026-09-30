@@ -455,3 +455,119 @@ def test_impact_is_added_to_unified_context():
         unified_context.get_impact_context()
         == result["impact"]
     )
+    
+def create_test_engine():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    impact_engine = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "Test answer",
+        "raw_answer": "Test raw answer",
+        "citations": [],
+        "rag_context": [],
+        "performance": None,
+        "conversation_size": 0,
+    }
+
+    architecture_engine.analyze.return_value = {
+        "layers": {
+            "Business": ["app/services"],
+            "Presentation": ["app/api"],
+        },
+        "dependency_graph": {
+            "app.api.auth": [
+                "app.services.auth_service"
+            ],
+        },
+        "cycles": [],
+        "hotspots": [
+            {
+                "module": "app.services.auth_service",
+                "fan_in": 5,
+                "fan_out": 2,
+                "score": 12,
+                "risk": "HIGH",
+            }
+        ],
+        "patterns": [
+            {
+                "pattern": "Layered Architecture",
+                "confidence": 0.95,
+            }
+        ],
+        "recommendations": [
+            {
+                "message": "Review high-risk hotspot.",
+                "severity": "HIGH",
+            }
+        ],
+    }
+
+    return IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        impact_engine=impact_engine,
+    )
+
+
+def test_architecture_question_contains_architecture_citations():
+    engine = create_test_engine()
+
+    result = engine.ask(
+        "What architecture does this repository use?"
+    )
+
+    assert "architecture_citations" in result
+    assert result["architecture_citations"]
+
+
+def test_both_question_contains_architecture_citations():
+    engine = create_test_engine()
+
+    result = engine.ask(
+        "What happens if I modify "
+        "app/services/auth_services.py? "
+    )
+    assert result["category"] == "BOTH"
+    assert "architecture_citations" in result
+    assert result["architecture_citations"]
+
+
+def test_architecture_citations_have_valid_types():
+    engine = create_test_engine()
+
+    result = engine.ask(
+        "What are the architecture hotspots?"
+    )
+
+    citations = result["architecture_citations"]
+
+    assert citations
+
+    valid_types = {
+        "architecture_layer",
+        "architecture_dependency",
+        "architecture_cycle",
+        "architecture_hotspot",
+        "architecture_pattern",
+        "architecture_recommendation",
+    }
+
+    for citation in citations:
+        assert citation["type"] in valid_types
+
+
+def test_architecture_citations_have_stable_ids():
+    engine = create_test_engine()
+
+    result = engine.ask(
+        "What are the architecture dependencies?"
+    )
+
+    citations = result["architecture_citations"]
+
+    assert citations
+
+    for citation in citations:
+        assert citation["id"].startswith("ARCH-")   

@@ -1,9 +1,18 @@
-from app.intelligence.architecture_context import ArchitectureContext
+from app.ai.architecture_citation_engine import (
+    ArchitectureCitationEngine,
+)
+from app.intelligence.architecture_context import (
+    ArchitectureContext,
+)
 from app.intelligence.architecture_aware_retriever import (
     ArchitectureAwareRetriever,
 )
-from app.intelligence.query_classifier import IntelligenceQueryClassifier
-from app.intelligence.unified_context import UnifiedContext
+from app.intelligence.query_classifier import (
+    IntelligenceQueryClassifier,
+)
+from app.intelligence.unified_context import (
+    UnifiedContext,
+)
 
 
 class IntelligenceEngine:
@@ -78,11 +87,30 @@ class IntelligenceEngine:
                 )
             )
 
+            # -----------------------------------------------------
+            # Architecture Citations
+            # -----------------------------------------------------
+
+            architecture_citation_engine = (
+                ArchitectureCitationEngine(
+                    architecture_analysis
+                )
+            )
+
+            architecture_citations = (
+                architecture_citation_engine.generate()
+            )
+
             return {
                 "category": "ARCHITECTURE",
                 "architecture": architecture_analysis,
                 "architecture_context": architecture_retrieval,
-                "structured_architecture_context": architecture_context,
+                "structured_architecture_context": (
+                    architecture_context
+                ),
+                "architecture_citations": (
+                    architecture_citations
+                ),
             }
 
         # ---------------------------------------------------------
@@ -99,13 +127,31 @@ class IntelligenceEngine:
                 architecture_analysis
             )
 
+            # -----------------------------------------------------
+            # Architecture Citations
+            # -----------------------------------------------------
+
+            architecture_citation_engine = (
+                ArchitectureCitationEngine(
+                    architecture_analysis
+                )
+            )
+
+            architecture_citations = (
+                architecture_citation_engine.generate()
+            )
+
+            # -----------------------------------------------------
+            # RAG
+            # -----------------------------------------------------
+
             rag_result = self.rag_pipeline.ask(
                 question,
                 architecture_context=architecture_context,
             )
 
             # -----------------------------------------------------
-            # Create initial unified context
+            # Create initial Unified Context
             # -----------------------------------------------------
 
             unified_context = UnifiedContext(
@@ -114,15 +160,26 @@ class IntelligenceEngine:
                     [],
                 ),
                 architecture_context=architecture_context,
+                symbol_context=rag_result.get(
+                    "symbol_context",
+                    [],
+                ),
             )
 
             result = {
                 "category": "BOTH",
-                "answer": rag_result.get("answer"),
-                "raw_answer": rag_result.get("raw_answer"),
+                "answer": rag_result.get(
+                    "answer"
+                ),
+                "raw_answer": rag_result.get(
+                    "raw_answer"
+                ),
                 "citations": rag_result.get(
                     "citations",
                     [],
+                ),
+                "architecture_citations": (
+                    architecture_citations
                 ),
                 "performance": rag_result.get(
                     "performance"
@@ -141,27 +198,47 @@ class IntelligenceEngine:
 
             if (
                 self.impact_engine is not None
-                and self._is_impact_question(question)
+                and self._is_impact_question(
+                    question
+                )
             ):
                 target = self._extract_impact_target(
                     question
                 )
 
                 if target:
-                    impact_result = self.impact_engine.analyze(
-                        target
+
+                    impact_result = (
+                        self.impact_engine.analyze(
+                            target
+                        )
                     )
 
-                    result["impact"] = impact_result
+                    result["impact"] = (
+                        impact_result
+                    )
 
-                    # Add impact information to UnifiedContext
-                    result["unified_context"] = UnifiedContext(
-                        rag_context=rag_result.get(
-                            "rag_context",
-                            [],
-                        ),
-                        architecture_context=architecture_context,
-                        impact_context=impact_result,
+                    # -------------------------------------------------
+                    # Update UnifiedContext with Impact
+                    # -------------------------------------------------
+
+                    result["unified_context"] = (
+                        UnifiedContext(
+                            rag_context=rag_result.get(
+                                "rag_context",
+                                [],
+                            ),
+                            architecture_context=(
+                                architecture_context
+                            ),
+                            symbol_context=rag_result.get(
+                                "symbol_context",
+                                [],
+                            ),
+                            impact_context=(
+                                impact_result
+                            ),
+                        )
                     )
 
             return result
@@ -170,6 +247,10 @@ class IntelligenceEngine:
             f"Unsupported intelligence category: "
             f"{classification.category}"
         )
+
+    # -------------------------------------------------------------
+    # Impact Question Detection
+    # -------------------------------------------------------------
 
     def _is_impact_question(
         self,
@@ -195,6 +276,10 @@ class IntelligenceEngine:
             for keyword in impact_keywords
         )
 
+    # -------------------------------------------------------------
+    # Impact Target Extraction
+    # -------------------------------------------------------------
+
     def _extract_impact_target(
         self,
         question: str,
@@ -202,7 +287,7 @@ class IntelligenceEngine:
         """
         Extract a repository file or module target from a question.
 
-        Supports both:
+        Supports:
 
         - app.services.auth_service
         - app/services/auth_service.py
@@ -210,21 +295,32 @@ class IntelligenceEngine:
         - tests/test_auth.py
         """
 
-        words = question.replace("?", "").split()
+        words = (
+            question
+            .replace("?", "")
+            .split()
+        )
 
         for word in words:
+
             cleaned = word.strip(
                 ".,:;()[]{}\"'"
             )
 
+            # -----------------------------------------------------
             # Repository file paths
+            # -----------------------------------------------------
+
             if (
                 cleaned.startswith("app/")
                 or cleaned.startswith("tests/")
             ):
                 return cleaned
 
+            # -----------------------------------------------------
             # Python module paths
+            # -----------------------------------------------------
+
             if (
                 cleaned.startswith("app.")
                 or cleaned.startswith("tests.")
