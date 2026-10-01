@@ -30,51 +30,47 @@ class UnifiedContext:
         self.graph_context = graph_context
         self.impact_context = impact_context
 
-    # ---------------------------------------------------------
-    # RAG Context
-    # ---------------------------------------------------------
+    # ========================================================
+    # RAG
+    # ========================================================
 
     def get_rag_context(self):
         return self.rag_context
 
-    # ---------------------------------------------------------
-    # Architecture Context
-    # ---------------------------------------------------------
+    # ========================================================
+    # ARCHITECTURE
+    # ========================================================
 
     def get_architecture_context(self):
         return self.architecture_context
 
-    # ---------------------------------------------------------
-    # Architecture Citations
-    # ---------------------------------------------------------
-
     def get_architecture_citations(self):
         return self.architecture_citations
 
-    # ---------------------------------------------------------
-    # Symbol Context
-    # ---------------------------------------------------------
+    # ========================================================
+    # SYMBOL
+    # ========================================================
 
     def get_symbol_context(self):
         return self.symbol_context
 
-    # ---------------------------------------------------------
-    # Graph Context
-    # ---------------------------------------------------------
+    # ========================================================
+    # GRAPH
+    # ========================================================
 
     def get_graph_context(self):
         return self.graph_context
 
-    # ---------------------------------------------------------
-    # Impact Context
-    # ---------------------------------------------------------
+    # ========================================================
+    # IMPACT
+    # ========================================================
 
     def get_impact_context(self):
         return self.impact_context
 
-    # ---------------------------------------------------------
-    # Context Presence
-    # ---------------------------------------------------------
+    # ========================================================
+    # EXISTENCE CHECKS
+    # ========================================================
 
     def has_rag_context(self):
         return bool(self.rag_context)
@@ -94,15 +90,17 @@ class UnifiedContext:
     def has_impact_context(self):
         return self.impact_context is not None
 
-    # ---------------------------------------------------------
-    # Dictionary Representation
-    # ---------------------------------------------------------
+    # ========================================================
+    # SERIALIZATION
+    # ========================================================
 
     def to_dict(self):
         return {
             "rag_context": self.rag_context,
             "architecture_context": self.architecture_context,
-            "architecture_citations": self.architecture_citations,
+            "architecture_citations": (
+                self.architecture_citations
+            ),
             "symbol_context": self.symbol_context,
             "graph_context": self.graph_context,
             "impact_context": self.impact_context,

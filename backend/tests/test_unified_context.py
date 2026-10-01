@@ -99,9 +99,11 @@ def test_architecture_context_preserves_analysis(
     architecture = context.get_architecture_context()
 
     assert architecture is architecture_context
+
     assert architecture.analysis["layers"]["Presentation"] == [
         "app/api"
     ]
+
     assert architecture.analysis["layers"]["Business"] == [
         "app/services"
     ]
@@ -128,6 +130,7 @@ def test_unified_context_contains_rag_and_architecture(
     )
 
     assert context.get_rag_context() == rag_context
+
     assert (
         context.get_architecture_context()
         is architecture_context
@@ -145,6 +148,7 @@ def test_unified_context_with_empty_contexts():
     )
 
     assert context.get_rag_context() == []
+
     assert context.get_architecture_context() is None
 
 
@@ -181,6 +185,7 @@ def test_rag_context_preserves_multiple_results(
     results = context.get_rag_context()
 
     assert len(results) == 3
+
     assert results[0]["document"] == "auth.py"
     assert results[1]["document"] == "user_service.py"
     assert results[2]["document"] == "router.py"
@@ -209,7 +214,12 @@ def test_unified_context_does_not_modify_rag_context(
     )
 
     assert context.get_rag_context() == original_rag_context
-    
+
+
+# ============================================================
+# ARCHITECTURE CITATIONS
+# ============================================================
+
 def test_architecture_citations_are_stored():
     citations = [
         {
@@ -266,4 +276,36 @@ def test_architecture_citations_are_in_to_dict():
 
     result = context.to_dict()
 
-    assert result["architecture_citations"] == citations    
+    assert result["architecture_citations"] == citations
+
+
+# ============================================================
+# GRAPH CONTEXT
+# ============================================================
+
+def test_graph_context_is_stored():
+    graph = object()
+
+    context = UnifiedContext(
+        graph_context=graph
+    )
+
+    assert context.get_graph_context() is graph
+
+
+def test_graph_context_defaults_to_none():
+    context = UnifiedContext()
+
+    assert context.get_graph_context() is None
+
+
+def test_graph_context_is_in_to_dict():
+    graph = object()
+
+    context = UnifiedContext(
+        graph_context=graph
+    )
+
+    result = context.to_dict()
+
+    assert result["graph_context"] is graph
