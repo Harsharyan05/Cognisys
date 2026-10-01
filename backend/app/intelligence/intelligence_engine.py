@@ -23,10 +23,10 @@ class IntelligenceEngine:
     - RAG
     - Architecture
     - Both
-    - Impact-aware analysis through the Both path
+    - Impact analysis
+    - Graph-aware queries
 
-    UnifiedContext combines the different intelligence sources
-    so downstream components can consume a single context object.
+    UnifiedContext combines the intelligence sources.
     """
 
     def __init__(
@@ -34,26 +34,31 @@ class IntelligenceEngine:
         rag_pipeline,
         architecture_engine,
         impact_engine=None,
+        code_graph_engine=None,
+        graph_aware_query=None,
     ):
         self.rag_pipeline = rag_pipeline
         self.architecture_engine = architecture_engine
         self.impact_engine = impact_engine
-        self.query_classifier = IntelligenceQueryClassifier()
+        self.code_graph_engine = code_graph_engine
+        self.graph_aware_query = graph_aware_query
 
-    def ask(
-        self,
-        question: str,
-    ):
-        classification = self.query_classifier.classify(
-            question
+        self.query_classifier = (
+            IntelligenceQueryClassifier()
         )
 
-        # ---------------------------------------------------------
+    def ask(self, question: str):
+        classification = (
+            self.query_classifier.classify(
+                question
+            )
+        )
+
+        # =====================================================
         # RAG
-        # ---------------------------------------------------------
+        # =====================================================
 
         if classification.category == "RAG":
-
             result = self.rag_pipeline.ask(
                 question
             )
@@ -63,22 +68,25 @@ class IntelligenceEngine:
                 **result,
             }
 
-        # ---------------------------------------------------------
+        # =====================================================
         # ARCHITECTURE
-        # ---------------------------------------------------------
+        # =====================================================
 
         if classification.category == "ARCHITECTURE":
-
             architecture_analysis = (
                 self.architecture_engine.analyze()
             )
 
-            architecture_context = ArchitectureContext(
-                architecture_analysis
+            architecture_context = (
+                ArchitectureContext(
+                    architecture_analysis
+                )
             )
 
-            architecture_retriever = ArchitectureAwareRetriever(
-                architecture_analysis
+            architecture_retriever = (
+                ArchitectureAwareRetriever(
+                    architecture_analysis
+                )
             )
 
             architecture_retrieval = (
@@ -86,10 +94,6 @@ class IntelligenceEngine:
                     question
                 )
             )
-
-            # -----------------------------------------------------
-            # Architecture Citations
-            # -----------------------------------------------------
 
             architecture_citation_engine = (
                 ArchitectureCitationEngine(
@@ -104,7 +108,9 @@ class IntelligenceEngine:
             return {
                 "category": "ARCHITECTURE",
                 "architecture": architecture_analysis,
-                "architecture_context": architecture_retrieval,
+                "architecture_context": (
+                    architecture_retrieval
+                ),
                 "structured_architecture_context": (
                     architecture_context
                 ),
@@ -113,23 +119,20 @@ class IntelligenceEngine:
                 ),
             }
 
-        # ---------------------------------------------------------
+        # =====================================================
         # BOTH
-        # ---------------------------------------------------------
+        # =====================================================
 
         if classification.category == "BOTH":
-
             architecture_analysis = (
                 self.architecture_engine.analyze()
             )
 
-            architecture_context = ArchitectureContext(
-                architecture_analysis
+            architecture_context = (
+                ArchitectureContext(
+                    architecture_analysis
+                )
             )
-
-            # -----------------------------------------------------
-            # Architecture Citations
-            # -----------------------------------------------------
 
             architecture_citation_engine = (
                 ArchitectureCitationEngine(
@@ -141,30 +144,57 @@ class IntelligenceEngine:
                 architecture_citation_engine.generate()
             )
 
-            # -----------------------------------------------------
-            # RAG
-            # -----------------------------------------------------
-
             rag_result = self.rag_pipeline.ask(
                 question,
-                architecture_context=architecture_context,
+                architecture_context=(
+                    architecture_context
+                ),
             )
 
-            # -----------------------------------------------------
-            # Create initial Unified Context
-            # -----------------------------------------------------
+            # -------------------------------------------------
+            # CODE GRAPH
+            # -------------------------------------------------
+
+            graph_context = None
+
+            if self.code_graph_engine is not None:
+                graph_context = (
+                    self.code_graph_engine.build()
+                )
+
+            # -------------------------------------------------
+            # GRAPH-AWARE QUERY
+            # -------------------------------------------------
+
+            graph_query_context = {}
+
+            if self.graph_aware_query is not None:
+                graph_query_context = (
+                    self._get_graph_query_context(
+                        question
+                    )
+                )
+
+            # -------------------------------------------------
+            # UNIFIED CONTEXT
+            # -------------------------------------------------
 
             unified_context = UnifiedContext(
                 rag_context=rag_result.get(
                     "rag_context",
                     [],
                 ),
-                architecture_context=architecture_context,
-                architecture_citations=architecture_citations,
+                architecture_context=(
+                    architecture_context
+                ),
+                architecture_citations=(
+                    architecture_citations
+                ),
                 symbol_context=rag_result.get(
                     "symbol_context",
                     [],
                 ),
+                graph_context=graph_context,
             )
 
             result = {
@@ -188,14 +218,23 @@ class IntelligenceEngine:
                 "conversation_size": rag_result.get(
                     "conversation_size"
                 ),
-                "architecture": architecture_analysis,
-                "architecture_context": architecture_context,
-                "unified_context": unified_context,
+                "architecture": (
+                    architecture_analysis
+                ),
+                "architecture_context": (
+                    architecture_context
+                ),
+                "graph_query_context": (
+                    graph_query_context
+                ),
+                "unified_context": (
+                    unified_context
+                ),
             }
 
-            # -----------------------------------------------------
-            # Impact Analysis
-            # -----------------------------------------------------
+            # -------------------------------------------------
+            # IMPACT ANALYSIS
+            # -------------------------------------------------
 
             if (
                 self.impact_engine is not None
@@ -203,12 +242,13 @@ class IntelligenceEngine:
                     question
                 )
             ):
-                target = self._extract_impact_target(
-                    question
+                target = (
+                    self._extract_impact_target(
+                        question
+                    )
                 )
 
                 if target:
-
                     impact_result = (
                         self.impact_engine.analyze(
                             target
@@ -219,10 +259,6 @@ class IntelligenceEngine:
                         impact_result
                     )
 
-                    # -------------------------------------------------
-                    # Update UnifiedContext with Impact
-                    # -------------------------------------------------
-
                     result["unified_context"] = (
                         UnifiedContext(
                             rag_context=rag_result.get(
@@ -232,9 +268,15 @@ class IntelligenceEngine:
                             architecture_context=(
                                 architecture_context
                             ),
+                            architecture_citations=(
+                                architecture_citations
+                            ),
                             symbol_context=rag_result.get(
                                 "symbol_context",
                                 [],
+                            ),
+                            graph_context=(
+                                graph_context
                             ),
                             impact_context=(
                                 impact_result
@@ -249,19 +291,136 @@ class IntelligenceEngine:
             f"{classification.category}"
         )
 
-    # -------------------------------------------------------------
-    # Impact Question Detection
-    # -------------------------------------------------------------
+    # =========================================================
+    # GRAPH QUERY CONTEXT
+    # =========================================================
+
+    def _get_graph_query_context(
+        self,
+        question: str,
+    ):
+        """
+        Extract a symbol/module target from the question
+        and perform the appropriate graph query.
+        """
+
+        target = self._extract_graph_target(
+            question
+        )
+
+        if not target:
+            return {}
+
+        question_lower = question.lower()
+
+        if "who calls" in question_lower:
+            return {
+                "callers": (
+                    self.graph_aware_query.get_callers(
+                        target
+                    )
+                )
+            }
+
+        if "what does" in question_lower and (
+            "call" in question_lower
+            or "calls" in question_lower
+        ):
+            return {
+                "callees": (
+                    self.graph_aware_query.get_callees(
+                        target
+                    )
+                )
+            }
+
+        if "imports" in question_lower:
+            return {
+                "imports": (
+                    self.graph_aware_query.get_imports(
+                        target
+                    )
+                )
+            }
+
+        if "import" in question_lower:
+            return {
+                "importers": (
+                    self.graph_aware_query.get_importers(
+                        target
+                    )
+                )
+            }
+
+        if "inherit" in question_lower:
+            return {
+                "relationships": (
+                    self.graph_aware_query.get_relationships(
+                        target
+                    )
+                )
+            }
+
+        return {
+            "relationships": (
+                self.graph_aware_query.get_relationships(
+                    target
+                )
+            )
+        }
+
+    def _extract_graph_target(
+        self,
+        question: str,
+    ):
+        """
+        Extract a graph symbol/module identifier
+        from a question.
+        """
+
+        words = (
+            question
+            .replace("?", "")
+            .split()
+        )
+
+        for word in words:
+            cleaned = word.strip(
+                ".,:;()[]{}\"'"
+            )
+
+            if (
+                ":method:" in cleaned
+                or ":function:" in cleaned
+                or ":class:" in cleaned
+            ):
+                return cleaned
+
+            if cleaned.endswith(".py"):
+                return cleaned
+
+            if (
+                cleaned.startswith("app/")
+                or cleaned.startswith("tests/")
+            ):
+                return cleaned
+
+            if (
+                cleaned.startswith("app.")
+                or cleaned.startswith("tests.")
+            ):
+                return cleaned
+
+        return None
+
+    # =========================================================
+    # IMPACT
+    # =========================================================
 
     def _is_impact_question(
         self,
         question: str,
     ) -> bool:
-        """
-        Determine whether the question asks about the impact
-        of modifying or changing something.
-        """
-
         question_lower = question.lower()
 
         impact_keywords = (
@@ -277,25 +436,10 @@ class IntelligenceEngine:
             for keyword in impact_keywords
         )
 
-    # -------------------------------------------------------------
-    # Impact Target Extraction
-    # -------------------------------------------------------------
-
     def _extract_impact_target(
         self,
         question: str,
     ):
-        """
-        Extract a repository file or module target from a question.
-
-        Supports:
-
-        - app.services.auth_service
-        - app/services/auth_service.py
-        - tests.test_auth
-        - tests/test_auth.py
-        """
-
         words = (
             question
             .replace("?", "")
@@ -303,24 +447,15 @@ class IntelligenceEngine:
         )
 
         for word in words:
-
             cleaned = word.strip(
                 ".,:;()[]{}\"'"
             )
-
-            # -----------------------------------------------------
-            # Repository file paths
-            # -----------------------------------------------------
 
             if (
                 cleaned.startswith("app/")
                 or cleaned.startswith("tests/")
             ):
                 return cleaned
-
-            # -----------------------------------------------------
-            # Python module paths
-            # -----------------------------------------------------
 
             if (
                 cleaned.startswith("app.")

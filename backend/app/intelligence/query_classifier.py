@@ -2,81 +2,123 @@ from dataclasses import dataclass
 
 
 @dataclass
-class IntelligenceQueryClassification:
+class ClassificationResult:
+    """
+    Result returned by the intelligence query classifier.
+    """
+
     category: str
-    confidence: float
+    confidence: float = 1.0
 
 
 class IntelligenceQueryClassifier:
     """
-    Determines which Cognisys intelligence source should handle
-    a repository question.
+    Classifies repository questions into:
 
-    Categories:
-        RAG            -> semantic/code knowledge
-        ARCHITECTURE   -> architecture/dependency knowledge
-        BOTH           -> requires both sources
+    - RAG
+    - ARCHITECTURE
+    - BOTH
+
+    Graph-aware questions are routed through BOTH so that
+    RAG, architecture, and code-graph intelligence can
+    contribute to the answer.
     """
 
-    ARCHITECTURE_KEYWORDS = {
-        "architecture",
-        "layer",
-        "layers",
-        "dependency",
-        "dependencies",
-        "depend",
-        "depends",
-        "dependent",
-        "module",
-        "modules",
-        "circular",
-        "coupling",
-        "hotspot",
-        "pattern",
-        "patterns",
-        "structure",
-        "impact",
-    }
+    def classify(self, question: str):
+        question_lower = question.lower()
 
-    BOTH_KEYWORDS = {
-        "modify",
-        "change",
-        "refactor",
-        "impact",
-        "happens if",
-        "authentication flow",
-        "flow",
-    }
+        # =====================================================
+        # GRAPH-AWARE / COMBINED QUERIES
+        # =====================================================
 
-    def classify(self, question: str) -> IntelligenceQueryClassification:
-        question_lower = question.lower().strip()
+        graph_keywords = (
+            "who calls",
+            "callers",
+            "callees",
+            "calls",
+            "import",
+            "imports",
+            "imported by",
+            "inherit",
+            "inherits",
+            "inherited by",
+            "parent class",
+            "child class",
+        )
 
-        if not question_lower:
-            return IntelligenceQueryClassification(
-                category="RAG",
-                confidence=0.5,
-            )
+        graph_query = any(
+            keyword in question_lower
+            for keyword in graph_keywords
+        )
 
-        # Questions that require both code understanding
-        # and architectural understanding.
-        if any(keyword in question_lower for keyword in self.BOTH_KEYWORDS):
-            return IntelligenceQueryClassification(
+        # "What does X call?" is graph-aware only when
+        # the question explicitly asks about a call relationship.
+        if (
+            "what does" in question_lower
+            and " call" in question_lower
+        ):
+            graph_query = True
+
+        # =====================================================
+        # BOTH QUERIES
+        # =====================================================
+
+        both_keywords = (
+            "modify",
+            "change",
+            "refactor",
+            "impact",
+            "what happens if",
+            "authentication flow",
+            "flow",
+        )
+
+        both_query = any(
+            keyword in question_lower
+            for keyword in both_keywords
+        )
+
+        if graph_query or both_query:
+            return ClassificationResult(
                 category="BOTH",
-                confidence=0.9,
+                confidence=1.0,
             )
 
-        # Architecture-specific questions.
+        # =====================================================
+        # ARCHITECTURE QUERIES
+        # =====================================================
+
+        architecture_keywords = (
+            "architecture",
+            "layer",
+            "layers",
+            "dependency",
+            "dependencies",
+            "module",
+            "modules",
+            "circular",
+            "coupling",
+            "hotspot",
+            "hotspots",
+            "pattern",
+            "patterns",
+            "structure",
+        )
+
         if any(
             keyword in question_lower
-            for keyword in self.ARCHITECTURE_KEYWORDS
+            for keyword in architecture_keywords
         ):
-            return IntelligenceQueryClassification(
+            return ClassificationResult(
                 category="ARCHITECTURE",
-                confidence=0.9,
+                confidence=1.0,
             )
 
-        # Default: use the existing RAG system.
-        return IntelligenceQueryClassification(
+        # =====================================================
+        # DEFAULT → RAG
+        # =====================================================
+
+        return ClassificationResult(
             category="RAG",
-            confidence=0.8,
+            confidence=1.0,
         )

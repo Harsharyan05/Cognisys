@@ -571,3 +571,386 @@ def test_architecture_citations_have_stable_ids():
 
     for citation in citations:
         assert citation["id"].startswith("ARCH-")   
+        
+# ============================================================
+# CODE GRAPH INTEGRATION
+# ============================================================
+
+def test_both_question_creates_graph_context():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    code_graph_engine = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "Authentication flow.",
+        "raw_answer": "Authentication flow.",
+        "citations": [],
+        "rag_context": [],
+    }
+
+    architecture_engine.analyze.return_value = {
+        "layers": {
+            "Presentation": ["app/api"],
+            "Business": ["app/services"],
+        },
+        "dependency_graph": {},
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [],
+        "recommendations": [],
+    }
+
+    graph = MagicMock()
+
+    code_graph_engine.build.return_value = graph
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        code_graph_engine=code_graph_engine,
+    )
+
+    result = engine.ask(
+        "Explain the authentication flow."
+    )
+
+    assert result["category"] == "BOTH"
+
+    assert "unified_context" in result
+
+    unified_context = result["unified_context"]
+
+    assert isinstance(
+        unified_context,
+        UnifiedContext,
+    )
+
+    assert (
+        unified_context.get_graph_context()
+        is graph
+    )
+
+    code_graph_engine.build.assert_called_once()
+
+
+def test_unified_context_contains_code_graph():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    code_graph_engine = MagicMock()
+
+    graph = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "Authentication flow.",
+        "raw_answer": "Authentication flow.",
+        "citations": [],
+        "rag_context": [],
+    }
+
+    architecture_engine.analyze.return_value = {
+        "layers": {},
+        "dependency_graph": {},
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [],
+        "recommendations": [],
+    }
+
+    code_graph_engine.build.return_value = graph
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        code_graph_engine=code_graph_engine,
+    )
+
+    result = engine.ask(
+        "Explain the authentication flow."
+    )
+
+    unified_context = result["unified_context"]
+
+    assert (
+        unified_context.get_graph_context()
+        is graph
+    )
+
+
+def test_code_graph_engine_is_called_for_both_question():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    code_graph_engine = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "Authentication flow.",
+        "raw_answer": "Authentication flow.",
+        "citations": [],
+        "rag_context": [],
+    }
+
+    architecture_engine.analyze.return_value = {
+        "layers": {},
+        "dependency_graph": {},
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [],
+        "recommendations": [],
+    }
+
+    graph = MagicMock()
+
+    code_graph_engine.build.return_value = graph
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        code_graph_engine=code_graph_engine,
+    )
+
+    result = engine.ask(
+        "What happens if I modify "
+        "app/services/auth_service.py?"
+    )
+
+    assert result["category"] == "BOTH"
+
+    code_graph_engine.build.assert_called_once()
+
+
+def test_code_graph_context_is_none_for_rag_question():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    code_graph_engine = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "UserService handles users.",
+        "citations": [],
+    }
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        code_graph_engine=code_graph_engine,
+    )
+
+    result = engine.ask(
+        "What does UserService do?"
+    )
+
+    assert result["category"] == "RAG"
+
+    code_graph_engine.build.assert_not_called()
+
+
+def test_code_graph_context_is_available_in_result():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    code_graph_engine = MagicMock()
+
+    graph = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "Authentication flow.",
+        "raw_answer": "Authentication flow.",
+        "citations": [],
+        "rag_context": [],
+    }
+
+    architecture_engine.analyze.return_value = {
+        "layers": {},
+        "dependency_graph": {},
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [],
+        "recommendations": [],
+    }
+
+    code_graph_engine.build.return_value = graph
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        code_graph_engine=code_graph_engine,
+    )
+
+    result = engine.ask(
+        "Explain the authentication flow."
+    )
+
+    assert "unified_context" in result
+
+    assert (
+        result["unified_context"].get_graph_context()
+        is graph
+    )        
+    
+# ============================================================
+# GRAPH-AWARE QUERY INTEGRATION
+# ============================================================
+
+def test_both_question_uses_graph_aware_query():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    code_graph_engine = MagicMock()
+    graph_aware_query = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "Authentication flow.",
+        "raw_answer": "Authentication flow.",
+        "citations": [],
+        "rag_context": [],
+    }
+
+    architecture_engine.analyze.return_value = {
+        "layers": {},
+        "dependency_graph": {},
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [],
+        "recommendations": [],
+    }
+
+    code_graph_engine.build.return_value = MagicMock()
+
+    graph_aware_query.get_callers.return_value = [
+        "controller.py:method:AuthController.login"
+    ]
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        code_graph_engine=code_graph_engine,
+        graph_aware_query=graph_aware_query,
+    )
+
+    result = engine.ask(
+        "Who calls "
+        "service.py:method:AuthService.authenticate?"
+    )
+
+    assert result["category"] == "BOTH"
+
+    graph_aware_query.get_callers.assert_called_once_with(
+        "service.py:method:AuthService.authenticate"
+    )
+
+    assert "graph_query_context" in result
+
+
+def test_graph_query_context_contains_callers():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    code_graph_engine = MagicMock()
+    graph_aware_query = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "Authentication flow.",
+        "raw_answer": "Authentication flow.",
+        "citations": [],
+        "rag_context": [],
+    }
+
+    architecture_engine.analyze.return_value = {
+        "layers": {},
+        "dependency_graph": {},
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [],
+        "recommendations": [],
+    }
+
+    graph_aware_query.get_callers.return_value = [
+        "controller.py:method:AuthController.login"
+    ]
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        code_graph_engine=code_graph_engine,
+        graph_aware_query=graph_aware_query,
+    )
+
+    result = engine.ask(
+        "Who calls "
+        "service.py:method:AuthService.authenticate?"
+    )
+
+    assert result["graph_query_context"]["callers"] == [
+        "controller.py:method:AuthController.login"
+    ]
+
+
+def test_graph_aware_query_gets_callees():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    code_graph_engine = MagicMock()
+    graph_aware_query = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "Authentication flow.",
+        "raw_answer": "Authentication flow.",
+        "citations": [],
+        "rag_context": [],
+    }
+
+    architecture_engine.analyze.return_value = {
+        "layers": {},
+        "dependency_graph": {},
+        "cycles": [],
+        "hotspots": [],
+        "patterns": [],
+        "recommendations": [],
+    }
+
+    graph_aware_query.get_callees.return_value = [
+        "repository.py:method:UserRepository.find_user"
+    ]
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        code_graph_engine=code_graph_engine,
+        graph_aware_query=graph_aware_query,
+    )
+
+    result = engine.ask(
+        "What does "
+        "service.py:method:AuthService.authenticate "
+        "call?"
+    )
+
+    assert result["category"] == "BOTH"
+
+    graph_aware_query.get_callees.assert_called_once_with(
+        "service.py:method:AuthService.authenticate"
+    )
+
+    assert result["graph_query_context"]["callees"] == [
+        "repository.py:method:UserRepository.find_user"
+    ]
+
+
+def test_graph_query_context_is_not_created_for_rag_question():
+    rag_pipeline = MagicMock()
+    architecture_engine = MagicMock()
+    graph_aware_query = MagicMock()
+
+    rag_pipeline.ask.return_value = {
+        "answer": "UserService handles users.",
+        "citations": [],
+    }
+
+    engine = IntelligenceEngine(
+        rag_pipeline=rag_pipeline,
+        architecture_engine=architecture_engine,
+        graph_aware_query=graph_aware_query,
+    )
+
+    result = engine.ask(
+        "What does UserService do?"
+    )
+
+    assert result["category"] == "RAG"
+
+    graph_aware_query.get_callers.assert_not_called()
+    graph_aware_query.get_callees.assert_not_called()    

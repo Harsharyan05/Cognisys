@@ -47,3 +47,51 @@ def test_general_question_defaults_to_rag():
     )
 
     assert result.category == "RAG"
+    
+# ============================================================
+# GRAPH-AWARE QUERIES
+# ============================================================
+
+def test_who_calls_question_is_both():
+    classifier = IntelligenceQueryClassifier()
+
+    result = classifier.classify(
+        "Who calls "
+        "service.py:method:AuthService.authenticate?"
+    )
+
+    assert result.category == "BOTH"
+
+
+def test_what_does_symbol_call_is_both():
+    classifier = IntelligenceQueryClassifier()
+
+    result = classifier.classify(
+        "What does "
+        "service.py:method:AuthService.authenticate "
+        "call?"
+    )
+
+    assert result.category == "BOTH"
+
+
+def test_import_question_is_both():
+    classifier = IntelligenceQueryClassifier()
+
+    result = classifier.classify(
+        "Which modules import "
+        "app.services.auth_service?"
+    )
+
+    assert result.category == "BOTH"
+
+
+def test_inheritance_question_is_both():
+    classifier = IntelligenceQueryClassifier()
+
+    result = classifier.classify(
+        "Which classes inherit from "
+        "app.services.BaseService?"
+    )
+
+    assert result.category == "BOTH"    
