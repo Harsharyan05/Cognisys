@@ -2261,7 +2261,7 @@ backend/
 
 
 
-                                Repository
+                  Repository
                         │
               ┌─────────┴─────────┐
               │                   │
@@ -2316,3 +2316,134 @@ Validated and tested the existing GitHub repository cloning pipeline.
             Local Repository
                   ↓
             AnalysisService
+
+
+# Cognisys Development Status
+
+## Current Development Status
+
+Cognisys has completed the core repository intelligence foundation and is currently in the **Intelligence / AI Reasoning phase**.
+
+### Current Test Status
+
+- **102 tests passing**
+- RAG intelligence: ✅
+- Architecture intelligence: ✅
+- Symbol intelligence: ✅
+- Code graph: ✅
+- Graph-aware queries: ✅
+- Impact analysis: ✅
+- Unified intelligence context: ✅
+- Query classification: ✅
+- Architecture citations: ✅
+
+---
+
+# Completed Components
+
+## Repository Intelligence
+
+- [x] Repository scanning
+- [x] File discovery
+- [x] Technology detection
+- [x] Dependency analysis
+- [x] Repository indexing
+- [x] Repository-specific vector stores
+
+## Architecture Intelligence
+
+- [x] Entry point detection
+- [x] Layer detection
+- [x] Service detection
+- [x] Dependency graph
+- [x] Circular dependency detection
+- [x] Hotspot detection
+- [x] Architecture pattern detection
+- [x] Recommendation engine
+- [x] Architecture report generation
+- [x] Architecture engine
+
+## RAG Intelligence
+
+- [x] Repository chunking
+- [x] Embedding generation
+- [x] FAISS vector search
+- [x] Semantic retrieval
+- [x] Keyword retrieval
+- [x] Hybrid retrieval
+- [x] Reranking
+- [x] Query classification
+- [x] Prompt building
+- [x] LLM integration
+- [x] RAG citations
+- [x] Conversation memory
+
+## Symbol Intelligence
+
+- [x] Symbol extraction
+- [x] Class extraction
+- [x] Function extraction
+- [x] Method extraction
+- [x] Symbol indexing
+- [x] Symbol embeddings
+- [x] Symbol semantic search
+- [x] Symbol relationship extraction
+- [x] Symbol relationship indexing
+
+## Code Graph Intelligence
+
+- [x] Code graph model
+- [x] Graph builder
+- [x] Graph query engine
+- [x] Code graph engine
+- [x] Graph-aware query layer
+- [x] CALLS relationships
+- [x] IMPORTS relationships
+- [x] INHERITS relationships
+- [x] Caller queries
+- [x] Callee queries
+- [x] Import queries
+- [x] Inheritance queries
+
+## Impact Intelligence
+
+- [x] Direct dependency impact
+- [x] Indirect dependency impact
+- [x] Affected API detection
+- [x] Affected service detection
+- [x] Affected test detection
+- [x] Impact risk classification
+
+## Unified Intelligence
+
+- [x] Intelligence query classifier
+- [x] RAG routing
+- [x] Architecture routing
+- [x] BOTH routing
+- [x] Graph-aware routing
+- [x] Architecture context
+- [x] Unified context
+- [x] Architecture citations
+- [x] Graph context support
+- [x] Impact context support
+
+---
+
+# Current Pending Tasks
+
+## 1. Production Graph API Integration
+
+**Priority: HIGH**
+
+Connect the completed graph intelligence components to the production `/intelligence/ask` endpoint.
+
+            ```text
+            CodeGraphEngine
+                  ↓
+            GraphQuery
+                  ↓
+            GraphAwareQuery
+                  ↓
+            IntelligenceEngine
+                  ↓
+            /intelligence/ask            
