@@ -7,6 +7,8 @@ Project: Cognisys
 
 from fastapi import APIRouter, HTTPException
 
+from app.repository.repository_manager import RepositoryManager
+
 from app.ai.repository_indexer import RepositoryIndexer
 from app.ai.rag_pipeline import RAGPipeline
 
@@ -50,6 +52,10 @@ def ask_intelligence(
         ↓
     Repository Clone
         ↓
+    Repository Registration
+        ↓
+    Mark Indexing
+        ↓
     Repository Indexing
         ↓
     RAG Pipeline
@@ -88,6 +94,29 @@ def ask_intelligence(
     repository_path = clone["local_path"]
 
     # ---------------------------------------------------------
+    # Repository persistence
+    # ---------------------------------------------------------
+
+    repository_manager = RepositoryManager()
+
+    repository_manager.register_repository(
+        repository_url=str(request.repository_url),
+        repository_name=clone["repository_name"],
+        owner=clone.get("owner", ""),
+        local_path=repository_path,
+        commit_sha=clone.get("commit_sha"),
+    )
+
+    repository_id = (
+        f"{clone.get('owner', '')}/"
+        f"{clone['repository_name']}"
+    )
+
+    repository_manager.mark_indexing(
+        repository_id
+    )
+
+    # ---------------------------------------------------------
     # Repository indexing
     # ---------------------------------------------------------
 
@@ -96,6 +125,11 @@ def ask_intelligence(
     )
 
     index_result = indexer.index()
+    
+    repository_manager.mark_indexed(
+        repository_id,
+        commit_sha=clone.get("commit_sha"),
+    )
 
     # ---------------------------------------------------------
     # RAG pipeline

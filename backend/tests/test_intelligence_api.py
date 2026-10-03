@@ -628,3 +628,132 @@ def test_intelligence_engine_receives_graph_components(
 
     assert kwargs["code_graph_engine"] is graph_engine
     assert kwargs["graph_aware_query"] is graph_aware_query
+    
+# ============================================================
+# REPOSITORY PERSISTENCE
+# ============================================================
+
+
+@patch("app.api.v1.intelligence.RepositoryManager")
+@patch("app.api.v1.intelligence.RepositoryIndexer")
+@patch("app.api.v1.intelligence.RepositoryService.clone_repository")
+@patch("app.api.v1.intelligence.IntelligenceEngine")
+def test_intelligence_ask_registers_repository(
+    mock_engine,
+    mock_clone,
+    mock_indexer,
+    mock_repository_manager,
+    tmp_path,
+):
+    repository_path = tmp_path / "demo"
+    repository_path.mkdir()
+
+    mock_clone.return_value = {
+        "status": "success",
+        "repository_name": "demo",
+        "local_path": str(repository_path),
+        "owner": "example",
+        "commit_sha": "abc123",
+    }
+
+    mock_indexer.return_value.index.return_value = {
+        "repository": "demo",
+        "chunks": 10,
+        "embeddings": 10,
+        "vector_store": (
+            "storage/repositories/demo/vector_db"
+        ),
+    }
+
+    mock_engine.return_value.ask.return_value = {
+        "category": "RAG",
+        "answer": "Repository analyzed.",
+        "raw_answer": "Repository analyzed.",
+        "citations": [],
+    }
+
+    response = client.post(
+        "/api/v1/intelligence/ask",
+        json={
+            "repository_url": (
+                "https://github.com/example/demo"
+            ),
+            "question": "Explain the repository.",
+        },
+    )
+
+    assert response.status_code == 200
+
+    mock_repository_manager.assert_called_once()
+
+    repository_manager = (
+        mock_repository_manager.return_value
+    )
+
+    repository_manager.register_repository.assert_called_once_with(
+        repository_url=(
+            "https://github.com/example/demo"
+        ),
+        repository_name="demo",
+        owner="example",
+        local_path=str(repository_path),
+        commit_sha="abc123",
+    )    
+     
+@patch("app.api.v1.intelligence.RepositoryManager")
+@patch("app.api.v1.intelligence.RepositoryIndexer")
+@patch("app.api.v1.intelligence.RepositoryService.clone_repository")
+@patch("app.api.v1.intelligence.IntelligenceEngine")
+def test_intelligence_ask_marks_repository_indexing(
+    mock_engine,
+    mock_clone,
+    mock_indexer,
+    mock_repository_manager,
+    tmp_path,
+):
+    repository_path = tmp_path / "demo"
+    repository_path.mkdir()
+
+    mock_clone.return_value = {
+        "status": "success",
+        "repository_name": "demo",
+        "local_path": str(repository_path),
+        "owner": "example",
+        "commit_sha": "abc123",
+    }
+
+    mock_indexer.return_value.index.return_value = {
+        "repository": "demo",
+        "chunks": 10,
+        "embeddings": 10,
+        "vector_store": (
+            "storage/repositories/demo/vector_db"
+        ),
+    }
+
+    mock_engine.return_value.ask.return_value = {
+        "category": "RAG",
+        "answer": "Repository analyzed.",
+        "raw_answer": "Repository analyzed.",
+        "citations": [],
+    }
+
+    response = client.post(
+        "/api/v1/intelligence/ask",
+        json={
+            "repository_url": (
+                "https://github.com/example/demo"
+            ),
+            "question": "Explain the repository.",
+        },
+    )
+
+    assert response.status_code == 200
+
+    repository_manager = (
+        mock_repository_manager.return_value
+    )
+
+    repository_manager.mark_indexing.assert_called_once_with(
+        "example/demo"
+    )        
