@@ -1,20 +1,64 @@
+"""
+Tests for the Code Graph.
+
+Author: Harsh Aryan
+Project: Cognisys
+"""
+
 from app.graph.graph_builder import GraphBuilder
 
-builder = GraphBuilder()
 
-graph = builder.build(
-    "storage/temp/Cognisys"
-)
+def test_graph_builder_returns_graph():
+    builder = GraphBuilder()
 
-print()
+    graph = builder.build([])
 
-print("Nodes :", len(graph.nodes))
-print("Edges :", len(graph.edges))
+    assert graph is not None
+    assert hasattr(graph, "nodes")
+    assert hasattr(graph, "edges")
 
-print()
 
-print(graph.nodes[:5])
+def test_graph_starts_empty():
+    builder = GraphBuilder()
 
-print()
+    graph = builder.build([])
 
-print(graph.edges[:5])
+    assert len(graph.nodes) == 0
+    assert len(graph.edges) == 0
+
+
+def test_graph_nodes_are_dictionary():
+    builder = GraphBuilder()
+
+    relationships = [
+        {
+            "source": "app/service.py",
+            "target": "app/repository.py",
+            "type": "IMPORTS",
+        }
+    ]
+
+    graph = builder.build(relationships)
+
+    assert isinstance(graph.nodes, dict)
+
+    assert "app/service.py" in graph.nodes
+    assert "app/repository.py" in graph.nodes
+
+
+def test_graph_edges_are_list():
+    builder = GraphBuilder()
+
+    relationships = [
+        {
+            "source": "app/service.py",
+            "target": "app/repository.py",
+            "type": "IMPORTS",
+        }
+    ]
+
+    graph = builder.build(relationships)
+
+    assert isinstance(graph.edges, list)
+
+    assert len(graph.edges) == 1
