@@ -5,7 +5,7 @@ Author: Harsh Aryan
 Project: Cognisys
 """
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 
@@ -18,6 +18,7 @@ client = TestClient(app)
 # ============================================================
 # RAG
 # ============================================================
+
 
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
@@ -88,6 +89,7 @@ def test_intelligence_ask_rag(
 # INVALID URL
 # ============================================================
 
+
 def test_intelligence_ask_invalid_url():
     response = client.post(
         "/api/v1/intelligence/ask",
@@ -104,6 +106,7 @@ def test_intelligence_ask_invalid_url():
 # EMPTY QUESTION
 # ============================================================
 
+
 def test_intelligence_ask_empty_question():
     response = client.post(
         "/api/v1/intelligence/ask",
@@ -119,6 +122,7 @@ def test_intelligence_ask_empty_question():
 # ============================================================
 # ARCHITECTURE
 # ============================================================
+
 
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
@@ -194,6 +198,7 @@ def test_intelligence_ask_architecture(
 # ============================================================
 # BOTH
 # ============================================================
+
 
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
@@ -275,6 +280,7 @@ def test_intelligence_ask_both(
 # ============================================================
 # IMPACT
 # ============================================================
+
 
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
@@ -371,6 +377,7 @@ def test_intelligence_ask_impact(
 # INDEXING BEFORE RAG
 # ============================================================
 
+
 @patch("app.api.v1.intelligence.RepositoryIndexer")
 @patch("app.api.v1.intelligence.RepositoryService.clone_repository")
 @patch("app.api.v1.intelligence.RAGPipeline")
@@ -437,3 +444,187 @@ def test_intelligence_ask_indexes_repository_before_rag(
         ),
         repository_path=str(repository_path),
     )
+
+
+# ============================================================
+# GRAPH INTELLIGENCE
+# ============================================================
+
+
+@patch("app.api.v1.intelligence.CodeGraphEngine")
+@patch("app.api.v1.intelligence.GraphQuery")
+@patch("app.api.v1.intelligence.GraphAwareQuery")
+@patch("app.api.v1.intelligence.RepositoryIndexer")
+@patch("app.api.v1.intelligence.RepositoryService.clone_repository")
+@patch("app.api.v1.intelligence.RAGPipeline")
+@patch("app.api.v1.intelligence.IntelligenceEngine")
+def test_intelligence_ask_wires_graph_intelligence(
+    mock_engine,
+    mock_rag_pipeline,
+    mock_clone,
+    mock_indexer,
+    mock_graph_aware_query,
+    mock_graph_query,
+    mock_graph_engine,
+):
+    mock_clone.return_value = {
+        "status": "success",
+        "repository_name": "demo",
+        "local_path": "C:\\repo\\demo",
+    }
+
+    mock_indexer.return_value.index.return_value = {
+        "repository": "demo",
+        "chunks": 10,
+        "embeddings": 10,
+        "vector_store": (
+            "storage/repositories/demo/vector_db"
+        ),
+    }
+
+    mock_graph_engine_instance = MagicMock()
+    mock_graph_engine.return_value = (
+        mock_graph_engine_instance
+    )
+
+    mock_graph = MagicMock()
+    mock_graph_engine_instance.build.return_value = mock_graph
+
+    mock_graph_query_instance = MagicMock()
+    mock_graph_query.return_value = (
+        mock_graph_query_instance
+    )
+
+    mock_graph_aware_query_instance = MagicMock()
+    mock_graph_aware_query.return_value = (
+        mock_graph_aware_query_instance
+    )
+
+    mock_engine.return_value.ask.return_value = {
+        "category": "BOTH",
+        "answer": (
+            "AuthService.authenticate is called "
+            "by AuthController.login."
+        ),
+        "raw_answer": (
+            "AuthService.authenticate is called "
+            "by AuthController.login."
+        ),
+        "citations": [],
+        "graph_query_context": {
+            "callers": [
+                "controller.py:method:"
+                "AuthController.login"
+            ]
+        },
+    }
+
+    response = client.post(
+        "/api/v1/intelligence/ask",
+        json={
+            "repository_url": (
+                "https://github.com/example/demo"
+            ),
+            "question": (
+                "Who calls "
+                "service.py:method:"
+                "AuthService.authenticate?"
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+
+    data = response.json()
+
+    assert data["status"] == "success"
+    assert data["category"] == "BOTH"
+
+    mock_graph_engine.assert_called_once_with(
+        "C:\\repo\\demo"
+    )
+
+    mock_graph_engine_instance.build.assert_called_once()
+
+    mock_graph_query.assert_called_once_with(
+        mock_graph
+    )
+
+    mock_graph_aware_query.assert_called_once_with(
+        mock_graph_query_instance
+    )
+
+
+# ============================================================
+# GRAPH COMPONENT INJECTION
+# ============================================================
+
+
+@patch("app.api.v1.intelligence.CodeGraphEngine")
+@patch("app.api.v1.intelligence.GraphQuery")
+@patch("app.api.v1.intelligence.GraphAwareQuery")
+@patch("app.api.v1.intelligence.RepositoryIndexer")
+@patch("app.api.v1.intelligence.RepositoryService.clone_repository")
+@patch("app.api.v1.intelligence.RAGPipeline")
+@patch("app.api.v1.intelligence.IntelligenceEngine")
+def test_intelligence_engine_receives_graph_components(
+    mock_engine,
+    mock_rag_pipeline,
+    mock_clone,
+    mock_indexer,
+    mock_graph_aware_query,
+    mock_graph_query,
+    mock_graph_engine,
+):
+    mock_clone.return_value = {
+        "status": "success",
+        "repository_name": "demo",
+        "local_path": "C:\\repo\\demo",
+    }
+
+    mock_indexer.return_value.index.return_value = {
+        "repository": "demo",
+        "chunks": 10,
+        "embeddings": 10,
+        "vector_store": (
+            "storage/repositories/demo/vector_db"
+        ),
+    }
+
+    graph_engine = mock_graph_engine.return_value
+    graph = MagicMock()
+
+    graph_engine.build.return_value = graph
+
+    graph_query = mock_graph_query.return_value
+    graph_aware_query = mock_graph_aware_query.return_value
+
+    mock_engine.return_value.ask.return_value = {
+        "category": "BOTH",
+        "answer": "Graph answer.",
+        "raw_answer": "Graph answer.",
+        "citations": [],
+    }
+
+    response = client.post(
+        "/api/v1/intelligence/ask",
+        json={
+            "repository_url": (
+                "https://github.com/example/demo"
+            ),
+            "question": (
+                "Who calls "
+                "service.py:method:"
+                "AuthService.authenticate?"
+            ),
+        },
+    )
+
+    assert response.status_code == 200
+
+    mock_engine.assert_called_once()
+
+    _, kwargs = mock_engine.call_args
+
+    assert kwargs["code_graph_engine"] is graph_engine
+    assert kwargs["graph_aware_query"] is graph_aware_query
