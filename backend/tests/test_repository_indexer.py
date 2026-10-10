@@ -282,3 +282,33 @@ def test_repository_indexer_reindexing(sample_repository):
         first_result["vector_store"]
         == second_result["vector_store"]
     )
+    
+def test_repository_indexer_reuses_unchanged_embeddings(
+    sample_repository, monkeypatch
+):
+    """Unchanged files should not be embedded again."""
+
+    indexer = RepositoryIndexer(
+        repository_path=sample_repository
+    )
+
+    first_result = indexer.index()
+
+    assert first_result["changed_or_added_files"] > 0
+
+    def fail_if_embeddings_created(chunks):
+        raise AssertionError(
+            "Embeddings were regenerated for unchanged files."
+        )
+
+    monkeypatch.setattr(
+        indexer,
+        "create_embeddings",
+        fail_if_embeddings_created,
+    )
+
+    second_result = indexer.index()
+
+    assert second_result["changed_or_added_files"] == 0
+    assert second_result["deleted_files"] == 0
+    assert second_result["unchanged_files"] > 0    

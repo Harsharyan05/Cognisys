@@ -334,7 +334,7 @@ class RAGPipeline:
 
             self._store_memory(
                 question,
-                formatted_answer,
+                answer,
             )
 
             # ---------------------------------------------------------

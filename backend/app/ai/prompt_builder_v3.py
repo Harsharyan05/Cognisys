@@ -367,48 +367,22 @@ Assistant
         for the LLM.
         """
 
+        
         return f"""
-The following question was asked by the user.
+        Answer the user's repository question directly.
 
-Question
+        Question:
+        {question}
 
-{question}
-
-Instructions
-
-1. Answer ONLY using the repository knowledge.
-
-2. Do NOT invent files, APIs, services,
-functions or implementation details.
-
-3. If sufficient information is unavailable,
-explicitly state that.
-
-4. Mention source documents whenever possible.
-
-5. Mention implementation files if available.
-
-6. Explain architecture layer-by-layer
-when relevant.
-
-7. Prefer the following answer format.
-
-Overview
-
-Implementation
-
-Architecture
-
-Important Components
-
-Execution Flow
-
-Relevant Files
-
-Summary
-
-Produce a clear, structured, professional answer.
-""".strip()
+        Rules:
+        1. Use only the supplied repository context.
+        2. Never invent files, classes, functions, APIs, or implementation details.
+        3. For implementation questions, identify the relevant file or module.
+        4. If evidence is insufficient, say so explicitly.
+        5. Use a concise answer. Use headings or bullets only when helpful.
+        6. Do not repeat previous answers or reproduce citation/source sections;
+        citations are formatted separately by the application.
+        """.strip()
 
     # ---------------------------------------------------------
     # Build Final Prompt

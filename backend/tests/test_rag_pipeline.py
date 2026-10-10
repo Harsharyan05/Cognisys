@@ -254,7 +254,7 @@ def test_conversation_memory_is_updated():
     history = pipeline.memory.get_history()
 
     assert history[0][0] == "What framework is used?"
-    assert history[0][1] == "FORMATTED ANSWER"
+    assert history[0][1] == "The repository uses FastAPI."
 
 
 def test_multiple_questions_update_memory():

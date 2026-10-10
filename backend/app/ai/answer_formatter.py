@@ -1,3 +1,4 @@
+
 """
 Answer Formatter
 
@@ -8,6 +9,7 @@ Author: Harsh Aryan
 Project: Cognisys
 """
 
+import re
 from typing import List
 
 from app.ai.citation_engine import Citation
@@ -19,54 +21,63 @@ class AnswerFormatter:
 
     Features
     --------
-    • Adds section headings
-    • Formats citations
-    • Formats markdown
-    • Builds final response
+    - Cleans generated answers
+    - Removes duplicate outer headers
+    - Formats citations
+    - Supports plain text and Markdown
+    - Builds final responses
     """
 
     def __init__(self):
-
         pass
-    
+
     # ---------------------------------------------------------
     # Clean Answer
     # ---------------------------------------------------------
 
-    def _clean_answer(
-        self,
-        answer: str,
-    ) -> str:
-        """
-        Cleans the raw LLM response.
-        """
+    def _clean_answer(self, answer: str) -> str:
+        """Remove duplicate headers and normalize whitespace."""
 
-        if not answer:
-
+        if not answer or not answer.strip():
             return "No answer generated."
 
         answer = answer.strip()
 
-        while "\n\n\n" in answer:
+        markers = {
+            "=" * 80,
+            "Repository Answer",
+            "Repository Sources",
+        }
 
-            answer = answer.replace(
-                "\n\n\n",
-                "\n\n",
-            )
+        lines = answer.splitlines()
 
-        return answer
+        # Remove repeated leading separators and answer headings.
+        while lines and (
+            not lines[0].strip()
+            or lines[0].strip() in markers
+        ):
+            lines.pop(0)
+
+        # Remove a trailing sources section if the formatter
+        # will append the authoritative citations separately.
+        for index, line in enumerate(lines):
+            if line.strip() == "Repository Sources":
+                lines = lines[:index]
+                break
+
+        answer = "\n".join(lines).strip()
+
+        # Normalize excessive blank lines.
+        answer = re.sub(r"\n{3,}", "\n\n", answer)
+
+        return answer or "No answer generated."
 
     # ---------------------------------------------------------
     # Format Header
     # ---------------------------------------------------------
 
-    def _format_header(
-        self,
-        title: str,
-    ) -> str:
-        """
-        Creates a section header.
-        """
+    def _format_header(self, title: str) -> str:
+        """Create a plain-text section header."""
 
         return (
             "\n"
@@ -85,51 +96,22 @@ class AnswerFormatter:
         self,
         citations: List[Citation],
     ) -> str:
-        """
-        Formats repository citations.
-        """
+        """Format repository citations."""
 
         if not citations:
-
-            return (
-                "No repository sources available."
-            )
+            return "No repository sources available."
 
         lines = []
 
-        for index, citation in enumerate(
-            citations,
-            start=1,
-        ):
-
-            lines.append(
-
-                f"{index}. {citation.document}"
-
-            )
-
-            lines.append(
-
-                f"   Title : {citation.title}"
-
-            )
-
-            lines.append(
-
-                f"   Chunk : {citation.chunk_id}"
-
-            )
-
-            lines.append(
-
-                f"   Score : {citation.score:.2f}"
-
-            )
-
+        for index, citation in enumerate(citations, start=1):
+            lines.append(f"{index}. {citation.document}")
+            lines.append(f"   Title : {citation.title}")
+            lines.append(f"   Chunk : {citation.chunk_id}")
+            lines.append(f"   Score : {citation.score:.2f}")
             lines.append("")
 
-        return "\n".join(lines)
-    
+        return "\n".join(lines).rstrip()
+
     # ---------------------------------------------------------
     # Format Plain Text
     # ---------------------------------------------------------
@@ -139,39 +121,18 @@ class AnswerFormatter:
         answer: str,
         citations: List[Citation],
     ) -> str:
-        """
-        Formats the final response as plain text.
-        """
+        """Format the final response as plain text."""
 
-        answer = self._clean_answer(
-            answer
-        )
+        answer = self._clean_answer(answer)
 
-        sections = []
+        sections = [
+            self._format_header("Repository Answer"),
+            answer,
+            self._format_header("Repository Sources"),
+            self._format_citations(citations),
+        ]
 
-        sections.append(
-            self._format_header(
-                "Repository Answer"
-            )
-        )
-
-        sections.append(answer)
-
-        sections.append(
-            self._format_header(
-                "Repository Sources"
-            )
-        )
-
-        sections.append(
-            self._format_citations(
-                citations
-            )
-        )
-
-        return "\n".join(
-            sections
-        )
+        return "\n".join(sections)
 
     # ---------------------------------------------------------
     # Format Markdown
@@ -182,68 +143,35 @@ class AnswerFormatter:
         answer: str,
         citations: List[Citation],
     ) -> str:
-        """
-        Formats the final response in Markdown.
-        """
+        """Format the final response in Markdown."""
 
-        answer = self._clean_answer(
-            answer
-        )
+        answer = self._clean_answer(answer)
 
-        markdown = []
-
-        markdown.append(
-            "# Repository Answer\n"
-        )
-
-        markdown.append(answer)
-
-        markdown.append(
-            "\n---\n"
-        )
-
-        markdown.append(
-            "## Repository Sources\n"
-        )
+        markdown = [
+            "# Repository Answer",
+            "",
+            answer,
+            "",
+            "---",
+            "",
+            "## Repository Sources",
+            "",
+        ]
 
         if not citations:
-
-            markdown.append(
-                "_No citations available._"
-            )
-
+            markdown.append("_No citations available._")
         else:
-
             for citation in citations:
+                markdown.extend([
+                    f"- **{citation.document}**",
+                    f"  - Title: {citation.title}",
+                    f"  - Chunk ID: {citation.chunk_id}",
+                    f"  - Score: {citation.score:.2f}",
+                    "",
+                ])
 
-                markdown.append(
+        return "\n".join(markdown).rstrip()
 
-                    f"- **{citation.document}**"
-
-                )
-
-                markdown.append(
-
-                    f"  - Title: {citation.title}"
-
-                )
-
-                markdown.append(
-
-                    f"  - Chunk ID: {citation.chunk_id}"
-
-                )
-
-                markdown.append(
-
-                    f"  - Score: {citation.score:.2f}\n"
-
-                )
-
-        return "\n".join(
-            markdown
-        )
-        
     # ---------------------------------------------------------
     # Display Answer
     # ---------------------------------------------------------
@@ -253,16 +181,9 @@ class AnswerFormatter:
         answer: str,
         citations: List[Citation],
     ) -> None:
-        """
-        Prints the formatted repository answer.
-        """
+        """Print the formatted repository answer."""
 
-        print(
-            self.format_text(
-                answer,
-                citations,
-            )
-        )
+        print(self.format_text(answer, citations))
 
     # ---------------------------------------------------------
     # Statistics
@@ -273,35 +194,18 @@ class AnswerFormatter:
         answer: str,
         citations: List[Citation],
     ) -> None:
-        """
-        Displays formatting statistics.
-        """
+        """Display answer formatting statistics."""
 
-        answer = self._clean_answer(
-            answer
-        )
+        answer = self._clean_answer(answer)
 
         print("\n")
         print("=" * 60)
         print("Answer Formatter Statistics")
         print("=" * 60)
-
-        print(
-            f"Characters : {len(answer)}"
-        )
-
-        print(
-            f"Words : {len(answer.split())}"
-        )
-
-        print(
-            f"Lines : {len(answer.splitlines())}"
-        )
-
-        print(
-            f"Citations : {len(citations)}"
-        )
-
+        print(f"Characters : {len(answer)}")
+        print(f"Words      : {len(answer.split())}")
+        print(f"Lines      : {len(answer.splitlines())}")
+        print(f"Citations  : {len(citations)}")
         print("=" * 60)
 
     # ---------------------------------------------------------
@@ -315,7 +219,7 @@ class AnswerFormatter:
         markdown: bool = False,
     ) -> str:
         """
-        Formats the final repository response.
+        Format the final repository response.
 
         Parameters
         ----------
@@ -326,18 +230,11 @@ class AnswerFormatter:
             Repository citations.
 
         markdown : bool
-            If True, returns Markdown.
-            Otherwise returns plain text.
+            If True, return Markdown.
+            Otherwise, return plain text.
         """
 
         if markdown:
+            return self.format_markdown(answer, citations)
 
-            return self.format_markdown(
-                answer,
-                citations,
-            )
-
-        return self.format_text(
-            answer,
-            citations,
-        )    
+        return self.format_text(answer, citations)

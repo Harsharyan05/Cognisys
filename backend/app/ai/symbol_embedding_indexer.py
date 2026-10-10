@@ -18,25 +18,19 @@ class SymbolEmbeddingIndexer:
     Converts symbol-level chunks into Embedding objects.
     """
 
-    def __init__(self, repository_path):
-
+    def __init__(self, repository_path, model=None):
         self.repository_path = Path(repository_path)
-
-        if not self.repository_path.exists():
-            raise ValueError(
-                "Repository path does not exist."
-            )
 
         if not self.repository_path.is_dir():
             raise ValueError(
-                "Repository path must be a directory."
+                "Repository path must be an existing directory."
             )
 
         self.symbol_indexer = SymbolIndexer(
             repository_path=self.repository_path
         )
 
-        self.model = SentenceTransformer(
+        self.model = model or SentenceTransformer(
             "sentence-transformers/all-MiniLM-L6-v2"
         )
 
