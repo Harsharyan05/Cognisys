@@ -1,3 +1,4 @@
+
 """
 Hybrid Retriever
 
@@ -24,6 +25,7 @@ class HybridRetriever:
     - Symbol-level Semantic Search
     - Keyword Matching
     - Document Priority
+    - Source-aware Ranking
     - Hybrid Scoring
     - Duplicate Removal
     - Re-ranking
@@ -51,24 +53,56 @@ class HybridRetriever:
         "at",
         "be",
         "by",
+        "can",
+        "could",
+        "did",
+        "do",
+        "does",
         "for",
         "from",
+        "had",
+        "has",
+        "have",
         "how",
         "in",
         "is",
         "it",
+        "its",
+        "may",
         "of",
         "on",
         "or",
+        "should",
         "that",
         "the",
+        "their",
         "this",
         "to",
+        "was",
+        "were",
         "what",
+        "when",
         "where",
         "which",
         "who",
+        "why",
+        "will",
         "with",
+        "would",
+    }
+
+    TEST_QUERY_TERMS = {
+        "test",
+        "tests",
+        "pytest",
+        "testing",
+        "unittest",
+        "unit test",
+        "unit tests",
+        "test case",
+        "test cases",
+        "test file",
+        "test files",
     }
 
     def __init__(
@@ -82,28 +116,19 @@ class HybridRetriever:
             else None
         )
 
-        # -----------------------------------------------------
         # File-level semantic search
-        # -----------------------------------------------------
-
         self.semantic_search = MultiSemanticSearch(
             vector_store_directory=vector_store_directory
         )
 
         self.classifier = QueryClassifier()
 
-        self.document_priority = (
-            self.DOCUMENT_PRIORITY.copy()
-        )
+        self.document_priority = self.DOCUMENT_PRIORITY.copy()
 
-        # -----------------------------------------------------
         # Symbol-level semantic search
-        # -----------------------------------------------------
-
         self.symbol_search = None
 
         if self.repository_path is not None:
-
             self.symbol_search = SymbolSemanticSearch(
                 repository_path=self.repository_path
             )
@@ -112,11 +137,7 @@ class HybridRetriever:
     # Query Tokenization
     # ---------------------------------------------------------
 
-    def _extract_keywords(
-        self,
-        query: str,
-    ) -> List[str]:
-
+    def _extract_keywords(self, query: str) -> List[str]:
         words = re.findall(
             r"[a-zA-Z0-9_\-\.]+",
             query.lower(),
@@ -132,40 +153,83 @@ class HybridRetriever:
         return keywords
 
     # ---------------------------------------------------------
+    # Query Intent
+    # ---------------------------------------------------------
+
+    def _asks_about_tests(self, question: str) -> bool:
+        """
+        Detect questions explicitly asking about tests.
+
+        This prevents test files from being penalized when
+        the user is asking about tests or test coverage.
+        """
+        question_lower = question.lower()
+
+        return any(
+            term in question_lower
+            for term in self.TEST_QUERY_TERMS
+        )
+
+    # ---------------------------------------------------------
+    # Source Classification
+    # ---------------------------------------------------------
+
+    @staticmethod
+    def _normalized_source(embedding: Embedding) -> str:
+        return (
+            (embedding.source_document or "")
+            .replace("\\", "/")
+            .strip("/")
+            .lower()
+        )
+
+    def _is_test_file(self, embedding: Embedding) -> bool:
+        """
+        Identify test files using their repository path.
+        """
+        source = self._normalized_source(embedding)
+        path_parts = source.split("/")
+
+        if "tests" in path_parts or "test" in path_parts:
+            return True
+
+        filename = path_parts[-1] if path_parts else ""
+
+        return (
+            filename.startswith("test_")
+            or filename.endswith("_test.py")
+        )
+
+    def _is_application_file(self, embedding: Embedding) -> bool:
+        """
+        Identify files under an application directory.
+        """
+        source = self._normalized_source(embedding)
+        path_parts = source.split("/")
+
+        return "app" in path_parts
+
+    # ---------------------------------------------------------
     # Keyword Search
     # ---------------------------------------------------------
 
-    def keyword_search(
-        self,
-        query: str,
-        semantic_results,
-    ):
+    def keyword_search(self, query: str, semantic_results):
         """
         Calculate keyword relevance for semantic results.
         """
-
         words = self._extract_keywords(query)
-
         results = []
 
         for embedding, distance in semantic_results:
-
             keyword_score = 0
 
-            title = (
-                embedding.title or ""
-            ).lower()
-
+            title = (embedding.title or "").lower()
             source_document = (
                 embedding.source_document or ""
             ).lower()
-
-            content = (
-                embedding.text or ""
-            ).lower()
+            content = (embedding.text or "").lower()
 
             for word in words:
-
                 if word in title:
                     keyword_score += 3
 
@@ -190,29 +254,18 @@ class HybridRetriever:
     # ---------------------------------------------------------
 
     @staticmethod
-    def _semantic_score(
-        distance: float,
-    ) -> float:
-
+    def _semantic_score(distance: float) -> float:
         if distance < 0:
             distance = 0
 
-        return 1.0 / (
-            1.0 + distance
-        )
+        return 1.0 / (1.0 + distance)
 
     # ---------------------------------------------------------
     # Document Priority
     # ---------------------------------------------------------
 
-    def _document_priority(
-        self,
-        embedding: Embedding,
-    ) -> int:
-
-        source_document = (
-            embedding.source_document or ""
-        )
+    def _document_priority(self, embedding: Embedding) -> int:
+        source_document = embedding.source_document or ""
 
         filename = (
             source_document
@@ -220,38 +273,22 @@ class HybridRetriever:
             .split("/")[-1]
         )
 
-        return self.document_priority.get(
-            filename,
-            1,
-        )
+        return self.document_priority.get(filename, 1)
 
     # ---------------------------------------------------------
     # Symbol Priority
     # ---------------------------------------------------------
 
     @staticmethod
-    def _symbol_priority(
-        embedding: Embedding,
-    ) -> int:
+    def _symbol_priority(embedding: Embedding) -> int:
         """
-        Give symbol-level results a small retrieval
-        boost without destroying file-level ranking.
+        Give symbol-level results a small retrieval boost
+        without destroying file-level ranking.
         """
+        metadata = getattr(embedding, "metadata", {}) or {}
+        symbol_type = metadata.get("symbol_type")
 
-        metadata = getattr(
-            embedding,
-            "metadata",
-            {},
-        ) or {}
-
-        symbol_type = metadata.get(
-            "symbol_type"
-        )
-
-        if symbol_type == "method":
-            return 3
-
-        if symbol_type == "function":
+        if symbol_type in {"method", "function"}:
             return 3
 
         if symbol_type == "class":
@@ -268,25 +305,17 @@ class HybridRetriever:
         embedding: Embedding,
         distance: float,
         keyword_score: int,
+        question: str = "",
     ) -> float:
+        """
+        Calculate the hybrid score and apply source-aware ranking.
 
-        semantic_score = (
-            self._semantic_score(
-                distance
-            )
-        )
-
-        priority = (
-            self._document_priority(
-                embedding
-            )
-        )
-
-        symbol_priority = (
-            self._symbol_priority(
-                embedding
-            )
-        )
+        Test files receive a penalty for implementation questions.
+        Application files receive a small boost for those questions.
+        """
+        semantic_score = self._semantic_score(distance)
+        priority = self._document_priority(embedding)
+        symbol_priority = self._symbol_priority(embedding)
 
         final_score = (
             semantic_score * 10.0
@@ -295,34 +324,32 @@ class HybridRetriever:
             + symbol_priority
         )
 
-        return float(
-            final_score
-        )
+        asks_about_tests = self._asks_about_tests(question)
+
+        if not asks_about_tests:
+            if self._is_test_file(embedding):
+                final_score -= 25.0
+            elif self._is_application_file(embedding):
+                final_score += 5.0
+
+        return float(final_score)
 
     # ---------------------------------------------------------
     # Re-ranking
     # ---------------------------------------------------------
 
-    def rerank(
-        self,
-        results,
-    ):
+    def rerank(self, results, question: str = ""):
         """
-        Re-rank results using the hybrid score.
+        Re-rank results using hybrid and source-aware scoring.
         """
-
         ranked = []
 
-        for (
-            embedding,
-            distance,
-            keyword_score,
-        ) in results:
-
+        for embedding, distance, keyword_score in results:
             score = self.calculate_score(
                 embedding=embedding,
                 distance=distance,
                 keyword_score=keyword_score,
+                question=question,
             )
 
             ranked.append(
@@ -344,46 +371,23 @@ class HybridRetriever:
     # Duplicate Removal
     # ---------------------------------------------------------
 
-    def remove_duplicates(
-        self,
-        ranked_results,
-    ):
+    def remove_duplicates(self, ranked_results):
         """
         Remove duplicate repository chunks.
 
         Symbol results are identified by symbol_id.
         File results are identified by source + chunk_id.
         """
-
         unique = []
-
         seen = set()
 
-        for (
-            score,
-            embedding,
-            distance,
-        ) in ranked_results:
-
-            metadata = getattr(
-                embedding,
-                "metadata",
-                {},
-            ) or {}
-
-            symbol_id = metadata.get(
-                "symbol_id"
-            )
+        for score, embedding, distance in ranked_results:
+            metadata = getattr(embedding, "metadata", {}) or {}
+            symbol_id = metadata.get("symbol_id")
 
             if symbol_id:
-
-                key = (
-                    "symbol",
-                    symbol_id,
-                )
-
+                key = ("symbol", symbol_id)
             else:
-
                 key = (
                     "file",
                     embedding.source_document,
@@ -409,91 +413,55 @@ class HybridRetriever:
     # Symbol Retrieval
     # ---------------------------------------------------------
 
-    def _retrieve_symbols(
-        self,
-        question: str,
-        candidate_k: int,
-    ):
+    def _retrieve_symbols(self, question: str, candidate_k: int):
         """
         Retrieve symbol-level results.
 
-        Symbol retrieval is optional. If it fails,
-        file-level retrieval continues normally.
+        If symbol retrieval fails, file-level retrieval
+        continues normally.
         """
-
         if self.symbol_search is None:
             return []
 
         try:
-
             return self.symbol_search.search(
                 query=question,
                 top_k=candidate_k,
             )
-
         except Exception:
-
             return []
 
     # ---------------------------------------------------------
     # Convert Symbol Results
     # ---------------------------------------------------------
 
-    def _prepare_symbol_results(
-        self,
-        question: str,
-        symbol_results,
-    ):
+    def _prepare_symbol_results(self, question: str, symbol_results):
         """
-        Convert symbol search results into the same
-        structure expected by the existing hybrid
-        scoring pipeline.
+        Convert symbol-level results into the structure expected
+        by the existing hybrid scoring pipeline.
         """
-
         if not symbol_results:
             return []
 
-        words = self._extract_keywords(
-            question
-        )
-
+        words = self._extract_keywords(question)
         prepared = []
 
-        for (
-            embedding,
-            distance,
-        ) in symbol_results:
-
+        for embedding, distance in symbol_results:
             keyword_score = 0
 
-            title = (
-                embedding.title or ""
-            ).lower()
-
+            title = (embedding.title or "").lower()
             source_document = (
                 embedding.source_document or ""
             ).lower()
+            content = (embedding.text or "").lower()
 
-            content = (
-                embedding.text or ""
-            ).lower()
-
-            metadata = getattr(
-                embedding,
-                "metadata",
-                {},
-            ) or {}
+            metadata = getattr(embedding, "metadata", {}) or {}
 
             symbol_name = (
-                metadata.get(
-                    "symbol_name",
-                    "",
-                )
-                or ""
+                metadata.get("symbol_name", "") or ""
             ).lower()
 
             for word in words:
-
                 if word in symbol_name:
                     keyword_score += 4
 
@@ -529,7 +497,6 @@ class HybridRetriever:
         Retrieve the most relevant repository context.
 
         Pipeline:
-
         Question
             ↓
         Query Classification
@@ -540,13 +507,12 @@ class HybridRetriever:
             ↓
         Keyword Scoring
             ↓
-        Hybrid Re-ranking
+        Source-aware Hybrid Re-ranking
             ↓
         Duplicate Removal
             ↓
         Top-K Results
         """
-
         if not question:
             return []
 
@@ -555,93 +521,53 @@ class HybridRetriever:
         if not question:
             return []
 
-        # -----------------------------------------------------
-        # Query Classification
-        # -----------------------------------------------------
+        # Query classification
+        classification = self.classifier.classify(question)
 
-        classification = (
-            self.classifier.classify(
-                question
-            )
-        )
-
-        # -----------------------------------------------------
         # Determine final Top-K
-        # -----------------------------------------------------
-
         final_top_k = (
             top_k
             if top_k is not None
             else classification.top_k
         )
 
-        # -----------------------------------------------------
-        # Retrieve more candidates
-        # -----------------------------------------------------
+        # Retrieve more candidates before re-ranking
+        candidate_k = max(final_top_k * 2, 15)
 
-        candidate_k = max(
-            final_top_k * 2,
-            15,
-        )
-
-        # -----------------------------------------------------
-        # File-Level Semantic Search
-        # -----------------------------------------------------
-
+        # File-level semantic search
         try:
-
-            semantic_results = (
-                self.semantic_search.search(
-                    query=question,
-                    top_k=candidate_k,
-                )
+            semantic_results = self.semantic_search.search(
+                query=question,
+                top_k=candidate_k,
             )
-
         except (
             FileNotFoundError,
             RuntimeError,
             OSError,
         ):
-
             semantic_results = []
 
-        # -----------------------------------------------------
-        # File-Level Keyword Scoring
-        # -----------------------------------------------------
-
+        # File-level keyword scoring
         file_keyword_results = []
 
         if semantic_results:
-
-            file_keyword_results = (
-                self.keyword_search(
-                    query=question,
-                    semantic_results=semantic_results,
-                )
+            file_keyword_results = self.keyword_search(
+                query=question,
+                semantic_results=semantic_results,
             )
 
-        # -----------------------------------------------------
-        # Symbol-Level Semantic Search
-        # -----------------------------------------------------
-
-        symbol_results = (
-            self._retrieve_symbols(
-                question=question,
-                candidate_k=candidate_k,
-            )
+        # Symbol-level semantic search
+        symbol_results = self._retrieve_symbols(
+            question=question,
+            candidate_k=candidate_k,
         )
 
-        symbol_keyword_results = (
-            self._prepare_symbol_results(
-                question=question,
-                symbol_results=symbol_results,
-            )
+        symbol_keyword_results = self._prepare_symbol_results(
+            question=question,
+            symbol_results=symbol_results,
         )
 
-        # -----------------------------------------------------
-        # Combine File + Symbol Results
-        # -----------------------------------------------------
-
+        # Combine file-level and symbol-level results
         combined_results = (
             file_keyword_results
             + symbol_keyword_results
@@ -650,30 +576,16 @@ class HybridRetriever:
         if not combined_results:
             return []
 
-        # -----------------------------------------------------
-        # Hybrid Re-ranking
-        # -----------------------------------------------------
-
-        ranked_results = (
-            self.rerank(
-                combined_results
-            )
+        # Hybrid re-ranking with original query
+        ranked_results = self.rerank(
+            combined_results,
+            question=question,
         )
 
-        # -----------------------------------------------------
-        # Duplicate Removal
-        # -----------------------------------------------------
-
-        unique_results = (
-            self.remove_duplicates(
-                ranked_results
-            )
+        # Remove duplicates
+        unique_results = self.remove_duplicates(
+            ranked_results
         )
 
-        # -----------------------------------------------------
-        # Return Top Results
-        # -----------------------------------------------------
-
-        return unique_results[
-            :final_top_k
-        ]
+        # Return top results
+        return unique_results[:final_top_k]
