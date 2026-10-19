@@ -26,14 +26,18 @@ class DependencyGraph:
     def __init__(self, repository_path: str):
         self.repository_path = Path(repository_path)
 
+    
     def build(self) -> Dict[str, List[str]]:
-
         graph = {}
 
         for file in self.repository_path.rglob("*.py"):
 
             # Ignore unwanted directories
             if any(part in self.IGNORE_DIRS for part in file.parts):
+                continue
+
+            # Ignore malformed paths caused by accidental path concatenation
+            if ".pyapp" in str(file).lower():
                 continue
 
             # Ignore test files

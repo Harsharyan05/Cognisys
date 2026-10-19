@@ -283,13 +283,28 @@ def test_repository_indexer_reindexing(sample_repository):
         == second_result["vector_store"]
     )
     
+
 def test_repository_indexer_reuses_unchanged_embeddings(
-    sample_repository, monkeypatch
+    sample_repository, monkeypatch, tmp_path
 ):
     """Unchanged files should not be embedded again."""
 
     indexer = RepositoryIndexer(
         repository_path=sample_repository
+    )
+
+    # Isolate this test's cache from previous test runs.
+    indexer.repository_storage = (
+        tmp_path / "repository_storage"
+    )
+    indexer.vector_store_directory = (
+        indexer.repository_storage / "vector_db"
+    )
+    indexer.state_path = (
+        indexer.repository_storage / "index_state.json"
+    )
+    indexer.metadata_path = (
+        indexer.vector_store_directory / "metadata.pkl"
     )
 
     first_result = indexer.index()
@@ -311,4 +326,4 @@ def test_repository_indexer_reuses_unchanged_embeddings(
 
     assert second_result["changed_or_added_files"] == 0
     assert second_result["deleted_files"] == 0
-    assert second_result["unchanged_files"] > 0    
+    assert second_result["unchanged_files"] > 0

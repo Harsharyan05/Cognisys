@@ -151,6 +151,7 @@ class ArchitectureAwareRetriever:
 
         return "\n".join(lines)
 
+    
     def _pattern_context(self):
         patterns = self.architecture.get(
             "patterns",
@@ -160,12 +161,27 @@ class ArchitectureAwareRetriever:
         lines = []
 
         for pattern in patterns:
+            if isinstance(pattern, dict):
+                name = pattern.get("pattern", "Unknown")
+                confidence = pattern.get("confidence", "N/A")
+            else:
+                name = getattr(
+                    pattern,
+                    "pattern",
+                    getattr(pattern, "name", "Unknown"),
+                )
+                confidence = getattr(
+                    pattern,
+                    "confidence",
+                    "N/A",
+                )
+
             lines.append(
-                f"{pattern.get('pattern')}: "
-                f"confidence={pattern.get('confidence')}"
+                f"{name}: confidence={confidence}"
             )
 
         return "\n".join(lines)
+
 
     def _risk_context(self):
         recommendations = self.architecture.get(
