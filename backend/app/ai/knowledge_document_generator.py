@@ -22,10 +22,11 @@ class KnowledgeDocumentGenerator:
     def __init__(
         self,
         output_directory: str = "storage/documents",
+        repository_path: str = ".",
     ):
 
         self.output_directory = Path(output_directory)
-
+        self.repository_path = Path(repository_path)
         self.output_directory.mkdir(
             parents=True,
             exist_ok=True,
@@ -333,79 +334,78 @@ class KnowledgeDocumentGenerator:
     # Dependency Graph
     # ---------------------------------------------------------
 
-    def _generate_dependency_graph(self):
-        """
-        Generate dependency graph documentation.
-        """
+    
+def _generate_dependency_graph(self):
+    """
+    Generate dependency graph documentation.
+    """
 
-        graph = DependencyGraph(".").build()
+    graph = DependencyGraph(
+        str(self.repository_path)
+    ).build()
 
-        output = (
-            self.output_directory /
-            "dependency_graph.md"
+    output = (
+        self.output_directory /
+        "dependency_graph.md"
+    )
+
+    with open(
+        output,
+        "w",
+        encoding="utf-8",
+    ) as file:
+
+        file.write("# Dependency Graph\n\n")
+
+        file.write(
+            "This document contains the module dependency graph "
+            "generated from the repository.\n\n"
         )
 
-        with open(
-            output,
-            "w",
-            encoding="utf-8",
-        ) as file:
+        total_modules = len(graph)
 
-            file.write("# Dependency Graph\n\n")
+        total_dependencies = sum(
+            len(dependencies)
+            for dependencies in graph.values()
+        )
 
-            file.write(
-                "This document contains the module dependency graph "
-                "generated from the repository.\n\n"
-            )
+        file.write("## Summary\n\n")
 
-            total_modules = len(graph)
+        file.write(
+            f"- Total Modules : {total_modules}\n"
+        )
 
-            total_dependencies = sum(
-                len(dependencies)
-                for dependencies in graph.values()
-            )
+        file.write(
+            f"- Total Dependencies : {total_dependencies}\n\n"
+        )
 
-            file.write("## Summary\n\n")
+        file.write("---\n\n")
 
-            file.write(
-                f"- Total Modules : {total_modules}\n"
-            )
+        for module in sorted(graph.keys()):
+            dependencies = sorted(graph[module])
 
             file.write(
-                f"- Total Dependencies : {total_dependencies}\n\n"
+                f"## {module}\n\n"
             )
 
-            file.write("---\n\n")
+            file.write(
+                f"Dependency Count : {len(dependencies)}\n\n"
+            )
 
-            for module in sorted(graph.keys()):
+            if dependencies:
+                file.write("### Imports\n\n")
 
-                dependencies = sorted(graph[module])
-
-                file.write(
-                    f"## {module}\n\n"
-                )
-
-                file.write(
-                    f"Dependency Count : {len(dependencies)}\n\n"
-                )
-
-                if dependencies:
-
-                    file.write("### Imports\n\n")
-
-                    for dependency in dependencies:
-
-                        file.write(
-                            f"- {dependency}\n"
-                        )
-
-                else:
-
+                for dependency in dependencies:
                     file.write(
-                        "No imported modules.\n"
+                        f"- {dependency}\n"
                     )
+            else:
+                file.write(
+                    "No imported modules.\n"
+                )
 
-                file.write("\n---\n\n")
+            file.write("\n---\n\n")
+
     
     # ---------------------------------------------------------
     # Technologies
