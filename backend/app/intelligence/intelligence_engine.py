@@ -72,52 +72,50 @@ class IntelligenceEngine:
         # ARCHITECTURE
         # =====================================================
 
+        
         if classification.category == "ARCHITECTURE":
-            architecture_analysis = (
-                self.architecture_engine.analyze()
+            architecture_analysis = self.architecture_engine.analyze()
+
+            structured_context = ArchitectureContext(
+                architecture_analysis
             )
 
-            architecture_context = (
-                ArchitectureContext(
-                    architecture_analysis
-                )
+            architecture_retriever = ArchitectureAwareRetriever(
+                architecture_analysis
+            )
+            architecture_retrieval = architecture_retriever.retrieve(
+                question
             )
 
-            architecture_retriever = (
-                ArchitectureAwareRetriever(
-                    architecture_analysis
-                )
+            architecture_citation_engine = ArchitectureCitationEngine(
+                architecture_analysis
             )
-
-            architecture_retrieval = (
-                architecture_retriever.retrieve(
-                    question
-                )
-            )
-
-            architecture_citation_engine = (
-                ArchitectureCitationEngine(
-                    architecture_analysis
-                )
-            )
-
             architecture_citations = (
                 architecture_citation_engine.generate()
             )
 
+            # Answer directly from architecture retrieval; do not invoke RAG.
+            architecture_answer = architecture_retrieval.get(
+                "context", ""
+            )
+
+            if not architecture_answer:
+                architecture_answer = (
+                    "No relevant architecture information was found."
+                )
+
             return {
                 "category": "ARCHITECTURE",
+                "question": question,
+                "answer": architecture_answer,
+                "raw_answer": architecture_answer,
+                "citations": architecture_citations,
                 "architecture": architecture_analysis,
-                "architecture_context": (
-                    architecture_retrieval
-                ),
-                "structured_architecture_context": (
-                    architecture_context
-                ),
-                "architecture_citations": (
-                    architecture_citations
-                ),
+                "architecture_context": architecture_retrieval,
+                "structured_architecture_context": structured_context,
+                "architecture_citations": architecture_citations,
             }
+
 
         # =====================================================
         # BOTH

@@ -13,7 +13,7 @@ from typing import Dict
 from app.architecture.service_detector import ServiceDetector
 from app.architecture.dependency_graph import DependencyGraph
 from app.parser.technology_detector import TechnologyDetector
-
+from app.parser.repository_metadata import RepositoryMetadataAnalyzer
 class KnowledgeDocumentGenerator:
     """
     Generates repository knowledge documents.
@@ -45,6 +45,7 @@ class KnowledgeDocumentGenerator:
         self._generate_apis(analysis)
         self._generate_dependency_graph()
         self._generate_technologies()
+        self._generate_repository_metadata()
         
         print("\nKnowledge documents generated successfully.")
 
@@ -94,9 +95,7 @@ class KnowledgeDocumentGenerator:
         analysis: Dict,
     ):
 
-        detector = ServiceDetector(".")
-
-        services = detector.detect()
+        services = self._discover_services()
 
         output = (
             self.output_directory /
@@ -144,9 +143,7 @@ class KnowledgeDocumentGenerator:
         analysis: Dict,
     ):
 
-        detector = ServiceDetector(".")
-
-        services = detector.detect()
+        services = self._discover_services()
 
         output = (
             self.output_directory /
@@ -175,19 +172,20 @@ class KnowledgeDocumentGenerator:
 
                 return
 
+            
             for endpoint in endpoints:
+                file.write(f"## {endpoint.get('method', 'UNKNOWN')} {endpoint.get('route') or '(route unresolved)'}\n\n")
+                file.write(f"- Function: {endpoint.get('function', 'Unknown')}\n")
+                file.write(f"- File: {endpoint.get('file', 'Unknown')}\n")
 
-                file.write(
-                    f"## {endpoint['method']}\n\n"
-                )
+                if endpoint.get("line") is not None:
+                    file.write(f"- Line: {endpoint['line']}\n")
 
-                file.write(
-                    f"Function : {endpoint['function']}\n\n"
-                )
+                if endpoint.get("router"):
+                    file.write(f"- Router: {endpoint['router']}\n")
 
-                file.write(
-                    f"File : {endpoint['file']}\n\n"
-                )        
+                file.write("\n")
+        
     # ---------------------------------------------------------
     # Hotspots
     # ---------------------------------------------------------
@@ -329,136 +327,133 @@ class KnowledgeDocumentGenerator:
                 )
 
                 file.write("\n\n")
-    
+                
     # ---------------------------------------------------------
     # Dependency Graph
     # ---------------------------------------------------------
 
-    
-def _generate_dependency_graph(self):
-    """
-    Generate dependency graph documentation.
-    """
+    def _generate_dependency_graph(self):
+        """Generate dependency graph documentation."""
 
-    graph = DependencyGraph(
-        str(self.repository_path)
-    ).build()
+        graph = DependencyGraph(
+            str(self.repository_path.resolve())
+        ).build()
 
-    output = (
-        self.output_directory /
-        "dependency_graph.md"
-    )
+        output = self.output_directory / "dependency_graph.md"
 
-    with open(
-        output,
-        "w",
-        encoding="utf-8",
-    ) as file:
-
-        file.write("# Dependency Graph\n\n")
-
-        file.write(
-            "This document contains the module dependency graph "
-            "generated from the repository.\n\n"
-        )
-
-        total_modules = len(graph)
-
-        total_dependencies = sum(
-            len(dependencies)
-            for dependencies in graph.values()
-        )
-
-        file.write("## Summary\n\n")
-
-        file.write(
-            f"- Total Modules : {total_modules}\n"
-        )
-
-        file.write(
-            f"- Total Dependencies : {total_dependencies}\n\n"
-        )
-
-        file.write("---\n\n")
-
-        for module in sorted(graph.keys()):
-            dependencies = sorted(graph[module])
-
+        with open(output, "w", encoding="utf-8") as file:
+            file.write("# Dependency Graph\n\n")
             file.write(
-                f"## {module}\n\n"
+                "This document contains the module dependency graph "
+                "generated from the repository.\n\n"
             )
 
-            file.write(
-                f"Dependency Count : {len(dependencies)}\n\n"
+            total_modules = len(graph)
+            total_dependencies = sum(
+                len(dependencies)
+                for dependencies in graph.values()
             )
 
-            if dependencies:
-                file.write("### Imports\n\n")
+            file.write("## Summary\n\n")
+            file.write(f"- Total Modules: {total_modules}\n")
+            file.write(
+                f"- Total Dependencies: {total_dependencies}\n\n"
+            )
+            file.write("---\n\n")
 
-                for dependency in dependencies:
-                    file.write(
-                        f"- {dependency}\n"
-                    )
-            else:
+            for module in sorted(graph):
+                dependencies = sorted(graph[module])
+
+                file.write(f"## {module}\n\n")
                 file.write(
-                    "No imported modules.\n"
+                    f"Dependency Count: {len(dependencies)}\n\n"
                 )
 
-            file.write("\n---\n\n")
+                if dependencies:
+                    file.write("### Imports\n\n")
 
-    
+                    for dependency in dependencies:
+                        file.write(f"- {dependency}\n")
+                else:
+                    file.write("No imported modules.\n")
+
+                file.write("\n---\n\n")
+
     # ---------------------------------------------------------
     # Technologies
     # ---------------------------------------------------------
 
     def _generate_technologies(self):
-        """
-        Generate technology documentation.
-        """
+        """Generate technology documentation."""
 
+        repository_root = self.repository_path.resolve()
         detector = TechnologyDetector()
+        technologies = detector.detect(repository_root)
 
-        technologies = detector.detect(".")
+        output = self.output_directory / "technologies.md"
 
-        output = (
-            self.output_directory /
-            "technologies.md"
-        )
-
-        with open(
-            output,
-            "w",
-            encoding="utf-8",
-        ) as file:
-
+        with open(output, "w", encoding="utf-8") as file:
             file.write("# Technologies\n\n")
 
             if not technologies:
-
-                file.write(
-                    "No technologies detected.\n"
-                )
-
+                file.write("No technologies detected.\n")
                 return
 
             for category, items in technologies.items():
-
-                file.write(
-                    f"## {category.replace('_', ' ').title()}\n\n"
-                )
+                title = category.replace("_", " ").title()
+                file.write(f"## {title}\n\n")
 
                 if items:
-
                     for item in items:
-
-                        file.write(
-                            f"- {item}\n"
-                        )
-
+                        file.write(f"- {item}\n")
                 else:
-
-                    file.write(
-                        "None Detected\n"
-                    )
+                    file.write("None detected.\n")
 
                 file.write("\n")
+    
+    
+    def _generate_repository_metadata(self):
+        """Generate a Markdown summary of repository metadata."""
+        analyzer = RepositoryMetadataAnalyzer(
+            str(self.repository_path.resolve())
+        )
+        metadata = analyzer.analyze()
+
+        output_path = (
+            self.output_directory / "repository_metadata.md"
+        )
+
+        with output_path.open("w", encoding="utf-8") as file:
+            file.write("# Repository Metadata\n\n")
+            file.write(
+                f"- **Repository:** {metadata['repository_name']}\n"
+            )
+            file.write(
+                f"- **Root:** {metadata['repository_root']}\n"
+            )
+            file.write(
+                f"- **Total files:** {metadata['total_files']}\n\n"
+            )
+
+            file.write("## Language Distribution\n\n")
+            if metadata["language_counts"]:
+                for language, count in metadata["language_counts"].items():
+                    file.write(f"- {language}: {count} files\n")
+            else:
+                file.write("- No recognized languages detected.\n")
+
+            file.write("\n## File Extensions\n\n")
+            for extension, count in metadata["extension_counts"].items():
+                file.write(f"- `{extension}`: {count} files\n")
+
+            file.write("\n## Directory Distribution\n\n")
+            for directory, count in metadata["directory_file_counts"].items():
+                file.write(f"- `{directory}`: {count} files\n")
+
+            file.write("\n## Project Configuration Files\n\n")
+            if metadata["project_files"]:
+                for project_file in metadata["project_files"]:
+                    file.write(f"- `{project_file}`\n")
+            else:
+                file.write("- No recognized project files detected.\n")
+            
